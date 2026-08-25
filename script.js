@@ -3,26 +3,13 @@ alert("PRIEST AI JavaScript is working!");
 const chat = document.getElementById("chat");
 const input = document.getElementById("message");
 
-const imageEditor =
-    document.getElementById("imageEditor");
-
-const imageInput =
-    document.getElementById("imageInput");
-
-const imagePreview =
-    document.getElementById("imagePreview");
-
-const previewContainer =
-    document.getElementById("previewContainer");
-
-const resultContainer =
-    document.getElementById("resultContainer");
-
-const resultImage =
-    document.getElementById("resultImage");
-
-const downloadButton =
-    document.getElementById("downloadButton");
+const imageEditor = document.getElementById("imageEditor");
+const imageInput = document.getElementById("imageInput");
+const imagePreview = document.getElementById("imagePreview");
+const previewContainer = document.getElementById("previewContainer");
+const resultContainer = document.getElementById("resultContainer");
+const resultImage = document.getElementById("resultImage");
+const downloadButton = document.getElementById("downloadButton");
 
 
 /* =========================
@@ -37,11 +24,7 @@ async function sendMessage() {
 
     removeWelcome();
 
-    addMessage(
-        "You",
-        text,
-        "user"
-    );
+    addMessage("You", text, "user");
 
     input.value = "";
 
@@ -49,39 +32,27 @@ async function sendMessage() {
 
     try {
 
-        const response =
-            await fetch(
-                "/api/chat",
-                {
-                    method: "POST",
+        const response = await fetch("/api/chat", {
+            method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-                    body: JSON.stringify({
-                        message: text
-                    })
-                }
-            );
+            body: JSON.stringify({
+                message: text
+            })
+        });
 
-        const raw =
-            await response.text();
+        const raw = await response.text();
 
         let data;
 
         try {
-
-            data =
-                JSON.parse(raw);
-
+            data = JSON.parse(raw);
         } catch {
-
             data = {
-                error:
-                    raw ||
-                    "The server returned an unknown error."
+                error: raw || "Unknown server response."
             };
         }
 
@@ -92,8 +63,7 @@ async function sendMessage() {
             addMessage(
                 "PRIEST AI",
                 `Server error (${response.status}): ${
-                    data.error ||
-                    "Unknown error"
+                    data.error || "Unknown error."
                 }`,
                 "ai"
             );
@@ -103,8 +73,7 @@ async function sendMessage() {
 
         addMessage(
             "PRIEST AI",
-            data.answer ||
-                "No answer was returned.",
+            data.answer || "No answer was returned.",
             "ai"
         );
 
@@ -125,36 +94,28 @@ async function sendMessage() {
    ADD MESSAGE
 ========================= */
 
-function addMessage(
-    name,
-    text,
-    type
-) {
+function addMessage(name, text, type) {
 
-    const message =
-        document.createElement("div");
+    if (!chat) return;
 
-    message.className =
-        "message";
+    const message = document.createElement("div");
 
-    const avatar =
-        document.createElement("div");
+    message.className = "message";
+
+    const avatar = document.createElement("div");
 
     avatar.className =
         "avatar " +
-        (
-            type === "ai"
-                ? "ai-avatar"
-                : "user-avatar"
-        );
+        (type === "ai"
+            ? "ai-avatar"
+            : "user-avatar");
 
     avatar.textContent =
         type === "ai"
             ? "P"
             : "U";
 
-    const content =
-        document.createElement("div");
+    const content = document.createElement("div");
 
     content.className =
         "message-content";
@@ -205,22 +166,10 @@ function addMessage(
 function formatText(text) {
 
     return String(text)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /\n/g,
-            "<br>"
-        )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>")
         .replace(
             /\*\*(.*?)\*\*/g,
             "<strong>$1</strong>"
@@ -234,14 +183,14 @@ function formatText(text) {
 
 function showTyping() {
 
+    if (!chat) return;
+
     const typing =
         document.createElement("div");
 
-    typing.id =
-        "typing";
+    typing.id = "typing";
 
-    typing.className =
-        "message";
+    typing.className = "message";
 
     typing.innerHTML = `
 
@@ -289,8 +238,7 @@ function sendSuggestion(text) {
 
     if (!input) return;
 
-    input.value =
-        text;
+    input.value = text;
 
     sendMessage();
 }
@@ -302,8 +250,9 @@ function sendSuggestion(text) {
 
 function newChat() {
 
-    chat.innerHTML =
-        "";
+    if (!chat) return;
+
+    chat.innerHTML = "";
 
     showHome();
 
@@ -313,8 +262,9 @@ function newChat() {
 
 function clearChat() {
 
-    chat.innerHTML =
-        "";
+    if (!chat) return;
+
+    chat.innerHTML = "";
 
     showHome();
 }
@@ -325,6 +275,8 @@ function clearChat() {
 ========================= */
 
 function showHome() {
+
+    if (!chat) return;
 
     chat.innerHTML = `
 
@@ -452,11 +404,17 @@ function previewImage(event) {
     reader.onload =
         function(e) {
 
-            imagePreview.src =
-                e.target.result;
+            if (imagePreview) {
 
-            previewContainer.style.display =
-                "block";
+                imagePreview.src =
+                    e.target.result;
+            }
+
+            if (previewContainer) {
+
+                previewContainer.style.display =
+                    "block";
+            }
         };
 
     reader.readAsDataURL(file);
@@ -468,6 +426,8 @@ function previewImage(event) {
 ========================= */
 
 async function editImage() {
+
+    if (!imageInput) return;
 
     const file =
         imageInput.files[0];
@@ -535,8 +495,7 @@ async function editImage() {
 
     if (button) {
 
-        button.disabled =
-            true;
+        button.disabled = true;
 
         button.textContent =
             "Creating image...";
@@ -568,7 +527,7 @@ async function editImage() {
             data = {
                 error:
                     raw ||
-                    "The server returned an unknown error."
+                    "Unknown server response."
             };
         }
 
@@ -582,21 +541,23 @@ async function editImage() {
             return;
         }
 
-        resultImage.src =
-            data.image;
+        if (resultImage) {
 
-        resultContainer.style.display =
-            "block";
+            resultImage.src =
+                data.image;
+        }
 
-        downloadButton.href =
-            data.image;
+        if (resultContainer) {
 
-        window.scrollTo({
-            top:
-                document.body.scrollHeight,
-            behavior:
-                "smooth"
-        });
+            resultContainer.style.display =
+                "block";
+        }
+
+        if (downloadButton) {
+
+            downloadButton.href =
+                data.image;
+        }
 
     } catch (error) {
 
@@ -609,8 +570,7 @@ async function editImage() {
 
         if (button) {
 
-            button.disabled =
-                false;
+            button.disabled = false;
 
             button.textContent =
                 "✨ Edit Image";
