@@ -2,11 +2,6 @@
   "name": "priest-ai",
   "version": "1.0.0",
   "description": "PRIEST AI - AI Assistant and Image Editor",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
