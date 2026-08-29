@@ -1,19 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>PRIEST AI</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
+
 
 <body>
 
 <div class="app">
 
-    <!-- SIDEBAR -->
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+
     <aside class="sidebar">
 
         <div class="brand">
@@ -23,33 +38,59 @@
             </div>
 
             <div>
-                <h2>PRIEST AI</h2>
-                <small>AI Assistant</small>
+
+                <h2>
+                    PRIEST AI
+                </h2>
+
+                <small>
+                    AI Assistant
+                </small>
+
             </div>
 
         </div>
 
 
-        <button class="new-chat" onclick="newChat()">
+        <button
+            type="button"
+            class="new-chat"
+            onclick="newChat()"
+        >
             ＋ New Chat
         </button>
 
 
         <nav>
 
-            <button onclick="showHome()">
+            <button
+                type="button"
+                onclick="showHome()"
+            >
                 🏠 Home
             </button>
 
-            <button onclick="focusInput()">
+
+            <button
+                type="button"
+                onclick="focusInput()"
+            >
                 💬 Chat
             </button>
 
-            <button onclick="openImageEditor()">
+
+            <button
+                type="button"
+                onclick="openImageEditor()"
+            >
                 🖼️ AI Image Editor
             </button>
 
-            <button onclick="clearChat()">
+
+            <button
+                type="button"
+                onclick="clearChat()"
+            >
                 🗑️ Clear Chat
             </button>
 
@@ -58,14 +99,18 @@
 
         <div class="sidebar-footer">
 
-            <strong>PRIEST AI</strong>
+            <strong>
+                PRIEST AI
+            </strong>
 
             <p>
                 Smart assistance for coding,
                 learning, creativity and more.
             </p>
 
-            <span>Version 1.0</span>
+            <span>
+                Version 1.0
+            </span>
 
         </div>
 
@@ -73,25 +118,36 @@
 
 
 
-    <!-- MAIN -->
+    <!-- =========================
+         MAIN
+    ========================== -->
+
     <main class="main">
 
+
         <!-- HEADER -->
+
         <header class="header">
 
             <div>
 
-                <h1>PRIEST AI</h1>
+                <h1>
+                    PRIEST AI
+                </h1>
 
                 <div class="online-status">
+
                     <span></span>
+
                     AI Online
+
                 </div>
 
             </div>
 
 
             <button
+                type="button"
                 class="mobile-menu"
                 onclick="toggleSidebar()"
             >
@@ -102,7 +158,10 @@
 
 
 
-        <!-- CHAT -->
+        <!-- =========================
+             CHAT
+        ========================== -->
+
         <section
             class="chat"
             id="chat"
@@ -114,9 +173,11 @@
                     P
                 </div>
 
+
                 <h2>
                     Welcome to PRIEST AI 👋
                 </h2>
+
 
                 <p>
                     Your AI assistant for questions,
@@ -127,9 +188,11 @@
 
                 <div class="suggestions">
 
+
                     <button
+                        type="button"
                         onclick="sendSuggestion(
-                        'Teach me programming from beginner level'
+                            'Teach me programming from beginner level'
                         )"
                     >
                         💻 Learn Programming
@@ -137,8 +200,9 @@
 
 
                     <button
+                        type="button"
                         onclick="sendSuggestion(
-                        'Help me build a professional website'
+                            'Help me build a professional website'
                         )"
                     >
                         🌐 Build a Website
@@ -146,8 +210,9 @@
 
 
                     <button
+                        type="button"
                         onclick="sendSuggestion(
-                        'Explain artificial intelligence simply'
+                            'Explain artificial intelligence simply'
                         )"
                     >
                         🤖 Explain AI
@@ -155,11 +220,12 @@
 
 
                     <button
+                        type="button"
                         onclick="sendSuggestion(
-                        'Give me a business idea'
+                            'Give me a legal and ethical cybersecurity learning idea'
                         )"
                     >
-                        💡 Business Idea
+                        🔐 Cybersecurity Idea
                     </button>
 
                 </div>
@@ -170,11 +236,15 @@
 
 
 
-        <!-- IMAGE EDITOR -->
+        <!-- =========================
+             IMAGE EDITOR
+        ========================== -->
+
         <section
             class="image-editor"
             id="imageEditor"
         >
+
 
             <div class="editor-header">
 
@@ -191,12 +261,19 @@
 
                 </div>
 
-                <button onclick="closeImageEditor()">
+
+                <button
+                    type="button"
+                    onclick="closeImageEditor()"
+                >
                     ✕
                 </button>
 
             </div>
 
+
+
+            <!-- UPLOAD -->
 
             <div class="upload-area">
 
@@ -214,9 +291,11 @@
                         📸
                     </div>
 
+
                     <strong>
                         Choose an image
                     </strong>
+
 
                     <span>
                         JPG, PNG or WebP
@@ -227,6 +306,9 @@
             </div>
 
 
+
+            <!-- PREVIEW -->
+
             <div
                 class="preview-container"
                 id="previewContainer"
@@ -234,17 +316,23 @@
 
                 <img
                     id="imagePreview"
-                    alt="Image preview"
+                    alt="Selected image preview"
                 >
 
             </div>
 
 
+
+            <!-- EDIT PROMPT -->
+
             <textarea
                 id="editPrompt"
-                placeholder="Example: Change the background to a modern office, keep my face and facial features unchanged, improve lighting, and add a professional look."
+                placeholder="Example: Change the background to a modern office, improve lighting, and give the image a professional look."
             ></textarea>
 
+
+
+            <!-- WATERMARK -->
 
             <label class="watermark-option">
 
@@ -259,13 +347,20 @@
             </label>
 
 
+
+            <!-- EDIT BUTTON -->
+
             <button
+                type="button"
                 class="edit-button"
                 onclick="editImage()"
             >
                 ✨ Edit Image
             </button>
 
+
+
+            <!-- RESULT -->
 
             <div
                 class="result-container"
@@ -277,8 +372,10 @@
                     alt="Edited image"
                 >
 
+
                 <a
                     id="downloadButton"
+                    href="#"
                     download="priest-ai-edited.png"
                 >
                     Download Image
@@ -290,10 +387,14 @@
 
 
 
-        <!-- INPUT -->
+        <!-- =========================
+             CHAT INPUT
+        ========================== -->
+
         <div class="input-area">
 
             <div class="input-box">
+
 
                 <textarea
                     id="message"
@@ -304,8 +405,10 @@
 
 
                 <button
+                    type="button"
                     class="send-button"
                     onclick="sendMessage()"
+                    aria-label="Send message"
                 >
                     ➤
                 </button>
@@ -314,7 +417,10 @@
 
 
             <p class="disclaimer">
-                PRIEST AI may make mistakes. Verify important information.
+
+                PRIEST AI may make mistakes.
+                Verify important information.
+
             </p>
 
         </div>
@@ -324,7 +430,13 @@
 </div>
 
 
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
 <script src="script.js"></script>
 
 </body>
+
 </html>
