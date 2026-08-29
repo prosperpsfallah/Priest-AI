@@ -1,5 +1,9 @@
 alert("PRIEST AI JavaScript is working!");
 
+/* =========================
+   ELEMENTS
+========================= */
+
 const chat = document.getElementById("chat");
 const input = document.getElementById("message");
 
@@ -7,6 +11,7 @@ const imageEditor = document.getElementById("imageEditor");
 const imageInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
 const previewContainer = document.getElementById("previewContainer");
+
 const resultContainer = document.getElementById("resultContainer");
 const resultImage = document.getElementById("resultImage");
 const downloadButton = document.getElementById("downloadButton");
@@ -18,9 +23,16 @@ const downloadButton = document.getElementById("downloadButton");
 
 async function sendMessage() {
 
+    if (!input) {
+        console.error("Message input was not found.");
+        return;
+    }
+
     const text = input.value.trim();
 
-    if (!text) return;
+    if (!text) {
+        return;
+    }
 
     removeWelcome();
 
@@ -49,10 +61,13 @@ async function sendMessage() {
         let data;
 
         try {
-            data = JSON.parse(raw);
-        } catch {
+            data = raw
+                ? JSON.parse(raw)
+                : {};
+        } catch (error) {
+
             data = {
-                error: raw || "Unknown server response."
+                error: raw || "Invalid server response."
             };
         }
 
@@ -60,10 +75,16 @@ async function sendMessage() {
 
         if (!response.ok) {
 
+            console.error(
+                "Chat API error:",
+                response.status,
+                data
+            );
+
             addMessage(
                 "PRIEST AI",
                 `Server error (${response.status}): ${
-                    data.error || "Unknown error."
+                    data.error || "Unknown server error."
                 }`,
                 "ai"
             );
@@ -71,15 +92,24 @@ async function sendMessage() {
             return;
         }
 
+        const answer =
+            data.answer ||
+            "PRIEST AI did not return an answer.";
+
         addMessage(
             "PRIEST AI",
-            data.answer || "No answer was returned.",
+            answer,
             "ai"
         );
 
     } catch (error) {
 
         removeTyping();
+
+        console.error(
+            "Connection error:",
+            error
+        );
 
         addMessage(
             "PRIEST AI",
@@ -96,29 +126,46 @@ async function sendMessage() {
 
 function addMessage(name, text, type) {
 
-    if (!chat) return;
+    if (!chat) {
+        console.error("Chat container was not found.");
+        return;
+    }
 
-    const message = document.createElement("div");
+    const message =
+        document.createElement("div");
 
     message.className = "message";
 
-    const avatar = document.createElement("div");
+
+    /* AVATAR */
+
+    const avatar =
+        document.createElement("div");
 
     avatar.className =
         "avatar " +
-        (type === "ai"
-            ? "ai-avatar"
-            : "user-avatar");
+        (
+            type === "ai"
+                ? "ai-avatar"
+                : "user-avatar"
+        );
 
     avatar.textContent =
         type === "ai"
             ? "P"
             : "U";
 
-    const content = document.createElement("div");
+
+    /* CONTENT */
+
+    const content =
+        document.createElement("div");
 
     content.className =
         "message-content";
+
+
+    /* NAME */
 
     const nameElement =
         document.createElement("div");
@@ -129,11 +176,15 @@ function addMessage(name, text, type) {
     nameElement.textContent =
         name;
 
+
+    /* TEXT */
+
     const textElement =
         document.createElement("div");
 
     textElement.innerHTML =
         formatText(text);
+
 
     content.appendChild(
         nameElement
@@ -166,10 +217,27 @@ function addMessage(name, text, type) {
 function formatText(text) {
 
     return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\n/g, "<br>")
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /\n/g,
+            "<br>"
+        )
+
         .replace(
             /\*\*(.*?)\*\*/g,
             "<strong>$1</strong>"
@@ -178,19 +246,22 @@ function formatText(text) {
 
 
 /* =========================
-   TYPING
+   TYPING INDICATOR
 ========================= */
 
 function showTyping() {
 
     if (!chat) return;
 
+    removeTyping();
+
     const typing =
         document.createElement("div");
 
     typing.id = "typing";
 
-    typing.className = "message";
+    typing.className =
+        "message";
 
     typing.innerHTML = `
 
@@ -204,9 +275,12 @@ function showTyping() {
                 PRIEST AI
             </div>
 
-            Thinking... 🤔
+            <div>
+                Thinking... 🤔
+            </div>
 
         </div>
+
     `;
 
     chat.appendChild(
@@ -267,6 +341,8 @@ function clearChat() {
     chat.innerHTML = "";
 
     showHome();
+
+    focusInput();
 }
 
 
@@ -300,36 +376,28 @@ function showHome() {
 
                 <button
                     type="button"
-                    onclick="sendSuggestion(
-                        'Teach me programming from beginner level'
-                    )"
+                    onclick="sendSuggestion('Teach me programming from beginner level')"
                 >
                     💻 Learn Programming
                 </button>
 
                 <button
                     type="button"
-                    onclick="sendSuggestion(
-                        'Help me build a professional website'
-                    )"
+                    onclick="sendSuggestion('Help me build a professional website')"
                 >
                     🌐 Build a Website
                 </button>
 
                 <button
                     type="button"
-                    onclick="sendSuggestion(
-                        'Explain artificial intelligence simply'
-                    )"
+                    onclick="sendSuggestion('Explain artificial intelligence simply')"
                 >
                     🤖 Explain AI
                 </button>
 
                 <button
                     type="button"
-                    onclick="sendSuggestion(
-                        'Give me a business idea'
-                    )"
+                    onclick="sendSuggestion('Give me a business idea')"
                 >
                     💡 Business Idea
                 </button>
@@ -337,6 +405,7 @@ function showHome() {
             </div>
 
         </div>
+
     `;
 }
 
@@ -354,6 +423,8 @@ function focusInput() {
 
 
 function handleKey(event) {
+
+    if (!event) return;
 
     if (
         event.key === "Enter" &&
@@ -373,30 +444,54 @@ function handleKey(event) {
 
 function openImageEditor() {
 
-    if (imageEditor) {
-
-        imageEditor.style.display =
-            "block";
+    if (!imageEditor) {
+        console.error(
+            "Image editor element was not found."
+        );
+        return;
     }
+
+    imageEditor.style.display =
+        "block";
 }
 
 
 function closeImageEditor() {
 
-    if (imageEditor) {
+    if (!imageEditor) return;
 
-        imageEditor.style.display =
-            "none";
-    }
+    imageEditor.style.display =
+        "none";
 }
 
 
 function previewImage(event) {
 
+    if (
+        !event ||
+        !event.target ||
+        !event.target.files
+    ) {
+        return;
+    }
+
     const file =
         event.target.files[0];
 
     if (!file) return;
+
+
+    /* Check image */
+
+    if (!file.type.startsWith("image/")) {
+
+        alert(
+            "Please select a valid image."
+        );
+
+        return;
+    }
+
 
     const reader =
         new FileReader();
@@ -417,6 +512,14 @@ function previewImage(event) {
             }
         };
 
+    reader.onerror =
+        function() {
+
+            alert(
+                "Could not read the selected image."
+            );
+        };
+
     reader.readAsDataURL(file);
 }
 
@@ -427,20 +530,31 @@ function previewImage(event) {
 
 async function editImage() {
 
-    if (!imageInput) return;
+    if (!imageInput) {
+
+        alert(
+            "Image input was not found."
+        );
+
+        return;
+    }
+
 
     const file =
         imageInput.files[0];
+
 
     const promptElement =
         document.getElementById(
             "editPrompt"
         );
 
+
     const prompt =
         promptElement
             ? promptElement.value.trim()
             : "";
+
 
     if (!file) {
 
@@ -451,6 +565,7 @@ async function editImage() {
         return;
     }
 
+
     if (!prompt) {
 
         alert(
@@ -460,38 +575,46 @@ async function editImage() {
         return;
     }
 
+
     const watermarkElement =
         document.getElementById(
             "watermark"
         );
+
 
     const watermark =
         watermarkElement
             ? watermarkElement.checked
             : false;
 
+
     const formData =
         new FormData();
+
 
     formData.append(
         "image",
         file
     );
 
+
     formData.append(
         "prompt",
         prompt
     );
 
+
     formData.append(
         "watermark",
-        watermark
+        String(watermark)
     );
+
 
     const button =
         document.querySelector(
             ".edit-button"
         );
+
 
     if (button) {
 
@@ -500,6 +623,7 @@ async function editImage() {
         button.textContent =
             "Creating image...";
     }
+
 
     try {
 
@@ -512,34 +636,57 @@ async function editImage() {
                 }
             );
 
+
         const raw =
             await response.text();
 
+
         let data;
+
 
         try {
 
             data =
-                JSON.parse(raw);
+                raw
+                    ? JSON.parse(raw)
+                    : {};
 
-        } catch {
+        } catch (error) {
 
             data = {
                 error:
                     raw ||
-                    "Unknown server response."
+                    "Invalid server response."
             };
         }
 
+
         if (!response.ok) {
+
+            console.error(
+                "Image API error:",
+                response.status,
+                data
+            );
 
             alert(
                 data.error ||
-                "Image editing failed."
+                `Image editing failed (${response.status}).`
             );
 
             return;
         }
+
+
+        if (!data.image) {
+
+            alert(
+                "The image editor did not return an image."
+            );
+
+            return;
+        }
+
 
         if (resultImage) {
 
@@ -547,24 +694,36 @@ async function editImage() {
                 data.image;
         }
 
+
         if (resultContainer) {
 
             resultContainer.style.display =
                 "block";
         }
 
+
         if (downloadButton) {
 
             downloadButton.href =
                 data.image;
+
+            downloadButton.download =
+                "priest-ai-edited-image.png";
         }
 
+
     } catch (error) {
+
+        console.error(
+            "Image editor connection error:",
+            error
+        );
 
         alert(
             "Could not connect to the image editor: " +
             error.message
         );
+
 
     } finally {
 
@@ -620,3 +779,62 @@ function toggleSidebar() {
         );
     }
 }
+
+
+/* =========================
+   MAKE FUNCTIONS AVAILABLE
+   TO HTML ONCLICK
+========================= */
+
+window.sendMessage =
+    sendMessage;
+
+window.sendSuggestion =
+    sendSuggestion;
+
+window.newChat =
+    newChat;
+
+window.clearChat =
+    clearChat;
+
+window.handleKey =
+    handleKey;
+
+window.openImageEditor =
+    openImageEditor;
+
+window.closeImageEditor =
+    closeImageEditor;
+
+window.previewImage =
+    previewImage;
+
+window.editImage =
+    editImage;
+
+window.toggleSidebar =
+    toggleSidebar;
+
+window.focusInput =
+    focusInput;
+
+
+/* =========================
+   START
+========================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        console.log(
+            "PRIEST AI JavaScript loaded successfully."
+        );
+
+        if (chat && !chat.innerHTML.trim()) {
+            showHome();
+        }
+
+    }
+);
