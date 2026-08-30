@@ -1,135 +1,154 @@
-const OpenAI = require("openai");
-const multer = require("multer");
-const fs = require("fs");
+console.log("PRIEST AI EDIT-IMAGE.JS LOADED");
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
+const imageInput = document.getElementById("imageInput");
+const imageUploadBtn = document.querySelector(".image-upload");
+let uploadedImageBase64 = null;
 
-const upload = multer({
-  dest: "/tmp/",
-  limits: {
-    fileSize: 10 * 1024 * 1024
-  }
-});
+// ================= HANDLE IMAGE UPLOAD =================
+if (imageInput) {
+    imageInput.addEventListener("change", function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-function runUpload(req, res) {
-  return new Promise((resolve, reject) => {
-    upload.single("image")(req, res, (error) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve();
-      }
+        // Check file type
+        if (!file.type.startsWith("image/")) {
+            alert("Please upload an image file");
+            return;
+        }
+
+        // Check file size - max 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Image is too large. Max 5MB");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            uploadedImageBase64 = event.target.result;
+
+            // Show preview in chat
+            addImagePreview(uploadedImageBase64, file.name);
+
+            // Auto-focus input so user can type prompt
+            document.getElementById("messageInput").focus();
+            document.getElementById("messageInput").placeholder = "Ask about this image...";
+        };
+        reader.readAsDataURL(file);
     });
-  });
 }
 
-module.exports = async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method not allowed"
-    });
-  }
+// ================= ADD IMAGE PREVIEW =================
+function addImagePreview(base64, filename) {
+    const chat = document.getElementById("chat");
+    const welcome = document.getElementById("welcome");
+    if (welcome) welcome.remove();
 
-  let uploadedFile = null;
+    const message = document.createElement("div");
+    message.className = "message user";
 
-  try {
-    await runUpload(req, res);
+    const avatar = document.createElement("div");
+    avatar.className = "message-avatar";
+    avatar.textContent = "U";
 
-    if (!req.file) {
-      return res.status(400).json({
-        error: "Please upload an image."
-      });
+    const content = document.createElement("div");
+    content.className = "message-content";
+    content.innerHTML = `
+        <strong>You</strong>
+        <div style="margin-top: 8px;">
+            <img src="${base64}" style="max-width: 300px; max-height: 300px; border-radius: 12px; border: 1px solid var(--border2);" />
+            <div style="font-size: 12px; color: var(--text3); margin-top: 4px;">${filename}</div>
+        </div>
+    `;
+
+    message.appendChild(avatar);
+    message.appendChild(content);
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// ================= MODIFY SENDMESSAGE TO INCLUDE IMAGE =================
+// This overrides the sendMessage in chat.js if image is attached
+window.sendMessageWithImage = async function(text) {
+    const chat = document.getElementById("chat");
+
+    // Show thinking
+    const thinking = document.createElement("div");
+    thinking.id = "thinking";
+    thinking.className = "message ai";
+    thinking.innerHTML = `
+        <div class="message-avatar">P</div>
+        <div class="message-content">
+            <strong>PRIEST AI</strong><br>
+            Analyzing image... 👀
+        </div>
+    `;
+    chat.appendChild(thinking);
+    chat.scrollTop = chat.scrollHeight;
+
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                message: text,
+                image: uploadedImageBase64 // Send base64 to backend
+            })
+        });
+
+        const raw = await response.text();
+        if (thinking) thinking.remove();
+
+        let data = {};
+        try {
+            data = JSON.parse(raw);
+        } catch {
+            data = { error: raw || "Invalid server response" };
+        }
+
+        if (!response.ok) {
+            addMessage("PRIEST AI", "Server error: " + (data.error || "Unknown error"), "ai");
+            return;
+        }
+
+        addMessage("PRIEST AI", data.answer || "PRIEST AI did not return an answer.", "ai");
+
+        // Clear uploaded image after sending
+        uploadedImageBase64 = null;
+        imageInput.value = "";
+        document.getElementById("messageInput").placeholder = "Message PRIEST AI...";
+
+    } catch (error) {
+        console.error("IMAGE CHAT ERROR:", error);
+        if (thinking) thinking.remove();
+        addMessage("PRIEST AI", "Connection error: " + error.message, "ai");
     }
+}
 
-    uploadedFile = req.file.path;
+// Helper to add text messages - same as in chat.js
+function addMessage(name, text, type) {
+    const chat = document.getElementById("chat");
+    const message = document.createElement("div");
+    message.className = "message " + type;
 
-    const prompt = String(req.body?.prompt || "").trim();
+    const avatar = document.createElement("div");
+    avatar.className = "message-avatar";
+    avatar.textContent = type === "ai"? "P" : "U";
 
-    const watermark =
-      req.body?.watermark === "true";
+    const content = document.createElement("div");
+    content.className = "message-content";
 
-    if (!prompt) {
-      return res.status(400).json({
-        error: "Please describe the edit."
-      });
-    }
+    const nameElement = document.createElement("strong");
+    nameElement.textContent = name;
 
-    let finalPrompt = `
-Edit the uploaded image according to the user's request.
+    const textElement = document.createElement("div");
+    textElement.style.marginTop = "4px";
+    textElement.style.whiteSpace = "pre-wrap";
+    textElement.textContent = text;
 
-Preserve the person's facial identity and important
-facial characteristics as closely as the image model allows.
-
-Do not unnecessarily change:
-- face shape
-- eyes
-- nose
-- mouth
-- skin tone
-- hairstyle
-- facial proportions
-- recognizable facial characteristics
-
-Only make the changes requested by the user.
-
-User's request:
-${prompt}
-`;
-
-    if (watermark) {
-      finalPrompt += `
-Add a tasteful, clearly visible "PRIEST AI" watermark.
-`;
-    }
-
-    const result = await openai.images.edit({
-      model:
-        process.env.OPENAI_IMAGE_MODEL ||
-        "gpt-image-2",
-
-      image:
-        fs.createReadStream(uploadedFile),
-
-      prompt: finalPrompt
-    });
-
-    const base64 =
-      result.data?.[0]?.b64_json;
-
-    if (!base64) {
-      throw new Error("No image returned by API.");
-    }
-
-    return res.status(200).json({
-      image: `data:image/png;base64,${base64}`
-    });
-
-  } catch (error) {
-    console.error(
-      "PRIEST AI IMAGE ERROR:",
-      error
-    );
-
-    return res.status(500).json({
-      error:
-        "PRIEST AI could not edit this image."
-    });
-
-  } finally {
-    if (
-      uploadedFile &&
-      fs.existsSync(uploadedFile)
-    ) {
-      try {
-        fs.unlinkSync(uploadedFile);
-      } catch (error) {
-        console.error(
-          "Temporary file cleanup failed:",
-          error
-        );
-      }
-    }
-  }
-};
+    content.appendChild(nameElement);
+    content.appendChild(textElement);
+    message.appendChild(avatar);
+    message.appendChild(content);
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
+}
