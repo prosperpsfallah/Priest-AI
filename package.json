@@ -1,13 +1,12 @@
 {
-  "name": "priest-ai",
+  "name": "priest-ai-backend",
   "version": "1.0.0",
-  "description": "PRIEST AI - School Management System AI Assistant",
-  "private": true,
-  "scripts": {
-    "dev": "node backend/server.js",
-    "start": "node backend/server.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "type": "module",
+  "main": "server.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "openai": "^4.52.7",
+    "serverless-http": "^3.2.0"
+  }
 }
