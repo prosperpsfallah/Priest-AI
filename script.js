@@ -1,418 +1,163 @@
-/* =========================================================
-   PRIEST AI — FINAL FRONTEND
-========================================================= */
-let chat;
-let input;
-let chatForm;
-let sendButton;
-/* =========================================================
-   INITIALIZE
-========================================================= */
-function initializeApp() {
-    chat = document.getElementById("chat");
-    input = document.getElementById("messageInput");
-    chatForm = document.getElementById("chatForm");
-    sendButton = document.getElementById("sendButton");
-    console.log("PRIEST AI frontend loaded.");
-    console.log("Chat:", !!chat);
-    console.log("Input:", !!input);
-    console.log("Form:", !!chatForm);
-    console.log("Send button:", !!sendButton);
-    /* FORM SUBMIT */
-    if (chatForm) {
-        chatForm.addEventListener(
-            "submit",
-            function(event) {
-                event.preventDefault();
-                sendMessage();
-            }
-        );
-    }
-    /* SUGGESTION BUTTONS */
-    document
-        .querySelectorAll(".suggestion")
-        .forEach(function(button) {
-            button.addEventListener(
-                "click",
-                function() {
-                    const prompt =
-                        button.dataset.prompt;
-                    if (prompt) {
-                        sendSuggestion(prompt);
-                    }
-                }
-            );
-        });
-    /* NEW CHAT */
-    const newChatButton =
-        document.getElementById("newChat");
-    if (newChatButton) {
-        newChatButton.addEventListener(
-            "click",
-            newChat
-        );
-    }
-    /* MOBILE MENU */
-    const menuButton =
-        document.getElementById("menuButton");
-    if (menuButton) {
-        menuButton.addEventListener(
-            "click",
-            toggleSidebar
-        );
+console.log("PRIEST AI SCRIPT LOADED");
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("messageInput");
+const form = document.getElementById("chatForm");
+const sendButton = document.getElementById("sendButton");
+
+/* ================= THEME TOGGLE ================= */
+const themeToggle = document.getElementById("themeToggle");
+if (themeToggle) {
+    themeToggle.addEventListener("click", function() {
+        document.body.classList.toggle("light");
+        this.textContent = document.body.classList.contains("light") ? "🌙" : "☀️";
+        localStorage.setItem("theme", document.body.classList.contains("light") ? "light" : "dark");
+    });
+
+    /* Load saved theme */
+    if (localStorage.getItem("theme") === "light") {
+        document.body.classList.add("light");
+        themeToggle.textContent = "🌙";
     }
 }
-/* =========================================================
-   SEND MESSAGE
-========================================================= */
+
+/* ================= SEND MESSAGE ================= */
 async function sendMessage() {
-    console.log("sendMessage() started");
-    if (!input) {
-        console.error(
-            "PRIEST AI: messageInput was not found."
-        );
-        alert(
-            "PRIEST AI: Message box was not found."
-        );
-        return;
-    }
-    const text =
-        input.value.trim();
-    if (!text) {
-        return;
-    }
-    removeWelcome();
-    addMessage(
-        "You",
-        text,
-        "user"
-    );
+    console.log("SEND BUTTON WORKING");
+    const text = input.value.trim();
+    if (!text) return;
+
+    const welcome = document.getElementById("welcome");
+    if (welcome) welcome.remove();
+
+    addMessage("You", text, "user");
     input.value = "";
-    showTyping();
+
+    const thinking = document.createElement("div");
+    thinking.id = "thinking";
+    thinking.className = "message ai";
+    thinking.innerHTML = `
+        <div class="message-avatar">P</div>
+        <div class="message-content">
+            <strong>PRIEST AI</strong><br>
+            Thinking... 🤔
+        </div>
+    `;
+    chat.appendChild(thinking);
+    chat.scrollTop = chat.scrollHeight;
+
     try {
-        console.log(
-            "Sending message to /api/chat..."
-        );
-        const response =
-            await fetch(
-                "/api/chat",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body:
-                        JSON.stringify({
-                            message: text
-                        })
-                }
-            );
-        console.log(
-            "Server status:",
-            response.status
-        );
-        const raw =
-            await response.text();
-        console.log(
-            "Server response:",
-            raw
-        );
-        let data;
-        try {
-            data =
-                raw
-                    ? JSON.parse(raw)
-                    : {};
-        } catch (error) {
-            data = {
-                error:
-                    raw ||
-                    "Invalid server response."
-            };
+        console.log("Calling /api/chat...");
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text })
+        });
+
+        console.log("API STATUS:", response.status);
+        const raw = await response.text();
+        console.log("API RESPONSE:", raw);
+
+        if (thinking) thinking.remove();
+
+        let data = {};
+        try { 
+            data = JSON.parse(raw); 
+        } catch { 
+            data = { error: raw || "The server returned an invalid response." }; 
         }
-        removeTyping();
+
         if (!response.ok) {
-            addMessage(
-                "PRIEST AI",
-                data.error ||
-                    `Server error ${response.status}`,
-                "ai"
-            );
+            addMessage("PRIEST AI", "Server error: " + (data.error || "Unknown error"), "ai");
             return;
         }
-        addMessage(
-            "PRIEST AI",
-            data.answer ||
-                "PRIEST AI did not return an answer.",
-            "ai"
-        );
+
+        addMessage("PRIEST AI", data.answer || "PRIEST AI did not return an answer.", "ai");
+
     } catch (error) {
-        console.error(
-            "PRIEST AI connection error:",
-            error
-        );
-        removeTyping();
-        addMessage(
-            "PRIEST AI",
-            "Connection error: " +
-                error.message,
-            "ai"
-        );
+        console.error("CHAT ERROR:", error);
+        if (thinking) thinking.remove();
+        addMessage("PRIEST AI", "Connection error: " + error.message, "ai");
     }
 }
-/* =========================================================
-   ADD MESSAGE
-========================================================= */
-function addMessage(
-    name,
-    text,
-    type
-) {
-    if (!chat) {
-        return;
-    }
-    const message =
-        document.createElement("div");
-    message.className =
-        "message " +
-        type;
-    const avatar =
-        document.createElement("div");
-    avatar.className =
-        "message-avatar";
-    avatar.textContent =
-        type === "ai"
-            ? "P"
-            : "U";
-    const content =
-        document.createElement("div");
-    content.className =
-        "message-content";
-    const nameElement =
-        document.createElement("div");
-    nameElement.className =
-        "message-name";
-    nameElement.textContent =
-        name;
-    const textElement =
-        document.createElement("div");
-    textElement.innerHTML =
-        formatText(text);
-    content.appendChild(
-        nameElement
-    );
-    content.appendChild(
-        textElement
-    );
-    message.appendChild(
-        avatar
-    );
-    message.appendChild(
-        content
-    );
-    chat.appendChild(
-        message
-    );
-    scrollChat();
+
+/* ================= ADD MESSAGE ================= */
+function addMessage(name, text, type) {
+    const message = document.createElement("div");
+    message.className = "message " + type;
+
+    const avatar = document.createElement("div");
+    avatar.className = "message-avatar";
+    avatar.textContent = type === "ai" ? "P" : "U";
+
+    const content = document.createElement("div");
+    content.className = "message-content";
+
+    const nameElement = document.createElement("strong");
+    nameElement.textContent = name;
+
+    const textElement = document.createElement("div");
+    textElement.style.marginTop = "4px";
+    textElement.textContent = text;
+
+    content.appendChild(nameElement);
+    content.appendChild(textElement);
+    message.appendChild(avatar);
+    message.appendChild(content);
+    chat.appendChild(message);
+    chat.scrollTop = chat.scrollHeight;
 }
-/* =========================================================
-   FORMAT TEXT
-========================================================= */
-function formatText(text) {
-    return String(text)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /\n/g,
-            "<br>"
-        )
-        .replace(
-            /\*\*(.*?)\*\*/g,
-            "<strong>$1</strong>"
-        );
+
+/* ================= FORM SUBMIT ================= */
+if (form) {
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+        sendMessage();
+    });
 }
-/* =========================================================
-   TYPING
-========================================================= */
-function showTyping() {
-    if (!chat) {
-        return;
-    }
-    removeTyping();
-    const typing =
-        document.createElement("div");
-    typing.id =
-        "typing";
-    typing.className =
-        "message ai";
-    typing.innerHTML = `
-        <div class="message-avatar">
-            P
-        </div>
-        <div class="message-content">
-            <div class="message-name">
-                PRIEST AI
+
+/* ================= SUGGESTIONS ================= */
+document.querySelectorAll(".suggestion").forEach(function(button) {
+    button.addEventListener("click", function() {
+        input.value = button.dataset.prompt;
+        sendMessage();
+    });
+});
+
+/* ================= NEW CHAT ================= */
+const newChatBtn = document.getElementById("newChat");
+if (newChatBtn) {
+    newChatBtn.addEventListener("click", function() {
+        chat.innerHTML = `
+            <div class="welcome" id="welcome">
+                <div class="welcome-logo">P</div>
+                <h1>PRIEST AI</h1>
+                <p>Your AI assistant for questions, ideas, coding, learning and creative work.</p>
+                <div class="suggestions">
+                    <button class="suggestion" type="button" data-prompt="What can you help me with?">What can you help me with?</button>
+                    <button class="suggestion" type="button" data-prompt="Help me write some code">Help me write some code</button>
+                    <button class="suggestion" type="button" data-prompt="Explain something to me">Explain something</button>
+                </div>
             </div>
-            <div>
-                Thinking... 🤔
-            </div>
-        </div>
-    `;
-    chat.appendChild(
-        typing
-    );
-    scrollChat();
+        `;
+        attachSuggestionListeners();
+    });
 }
-function removeTyping() {
-    const typing =
-        document.getElementById(
-            "typing"
-        );
-    if (typing) {
-        typing.remove();
-    }
-}
-/* =========================================================
-   SUGGESTIONS
-========================================================= */
-function sendSuggestion(text) {
-    if (!input) {
-        return;
-    }
-    input.value =
-        String(text);
-    sendMessage();
-}
-/* =========================================================
-   NEW CHAT
-========================================================= */
-function newChat() {
-    if (!chat) {
-        return;
-    }
-    chat.innerHTML = "";
-    showHome();
-    if (input) {
-        input.focus();
-    }
-}
-/* =========================================================
-   HOME
-========================================================= */
-function showHome() {
-    if (!chat) {
-        return;
-    }
-    chat.innerHTML = `
-        <div
-            class="welcome"
-            id="welcome"
-        >
-            <div class="welcome-logo">
-                P
-            </div>
-            <h1>
-                PRIEST AI
-            </h1>
-            <p>
-                Your AI assistant for questions,
-                ideas, coding, learning and creative work.
-            </p>
-            <div class="suggestions">
-                <button
-                    class="suggestion"
-                    type="button"
-                    data-prompt="What can you help me with?"
-                >
-                    What can you help me with?
-                </button>
-                <button
-                    class="suggestion"
-                    type="button"
-                    data-prompt="Help me write some code"
-                >
-                    Help me write some code
-                </button>
-                <button
-                    class="suggestion"
-                    type="button"
-                    data-prompt="Explain something to me"
-                >
-                    Explain something
-                </button>
-            </div>
-        </div>
-    `;
-    document
-        .querySelectorAll(".suggestion")
-        .forEach(function(button) {
-            button.addEventListener(
-                "click",
-                function() {
-                    sendSuggestion(
-                        button.dataset.prompt
-                    );
-                }
-            );
+
+/* Re-attach listeners after new chat reset */
+function attachSuggestionListeners() {
+    document.querySelectorAll(".suggestion").forEach(function(button) {
+        button.addEventListener("click", function() {
+            input.value = button.dataset.prompt;
+            sendMessage();
         });
+    });
 }
-/* =========================================================
-   REMOVE WELCOME
-========================================================= */
-function removeWelcome() {
-    const welcome =
-        document.querySelector(
-            ".welcome"
-        );
-    if (welcome) {
-        welcome.remove();
-    }
-}
-/* =========================================================
-   SCROLL
-========================================================= */
-function scrollChat() {
-    if (chat) {
-        chat.scrollTop =
-            chat.scrollHeight;
-    }
-}
-/* =========================================================
-   MOBILE SIDEBAR
-========================================================= */
-function toggleSidebar() {
-    const sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-    if (sidebar) {
-        sidebar.classList.toggle(
-            "open"
-        );
-    }
-}
-/* =========================================================
-   START
-========================================================= */
-if (
-    document.readyState ===
-    "loading"
-) {
-    document.addEventListener(
-        "DOMContentLoaded",
-        initializeApp
-    );
-} else {
-    initializeApp();
+
+/* ================= MOBILE MENU ================= */
+const menuButton = document.getElementById("menuButton");
+if (menuButton) {
+    menuButton.addEventListener("click", function() {
+        document.getElementById("sidebar").classList.toggle("open");
+    });
 }
