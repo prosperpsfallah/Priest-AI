@@ -1,11 +1,9 @@
 {
-  "name": "priest-ai",
-  "version": "1.0.0",
-  "description": "PRIEST AI - AI Assistant and Image Editor",
+  "name": "priest-ai-backend",
+  "type": "module",
   "dependencies": {
-    "dotenv": "^16.4.7",
-    "express": "^5.1.0",
-    "multer": "^2.0.0",
-    "openai": "^5.0.0"
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "openai": "^4.52.7"
   }
 }
