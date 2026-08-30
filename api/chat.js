@@ -1,54 +1,80 @@
 const OpenAI = require("openai");
-
 module.exports = async (req, res) => {
+    /* =========================
+       METHOD CHECK
+    ========================= */
     if (req.method !== "POST") {
         return res.status(405).json({
             error: "Method not allowed"
         });
     }
-
-    try {
-        const apiKey = process.env.OPENAI_API_KEY;
-
-        if (!apiKey) {
-            return res.status(500).json({
-                error: "OPENAI_API_KEY is missing in Vercel."
-            });
-        }
-
-        const client = new OpenAI({
-            apiKey: apiKey
+    /* =========================
+       API KEY CHECK
+    ========================= */
+    const apiKey =
+        process.env.OPENAI_API_KEY;
+    if (
+        !apiKey ||
+        typeof apiKey !== "string" ||
+        !apiKey.trim()
+    ) {
+        console.error(
+            "PRIEST AI: OPENAI_API_KEY is not available."
+        );
+        return res.status(500).json({
+            error:
+                "OPENAI_API_KEY is not available to this Vercel deployment. Check the Environment Variables for this project and redeploy."
         });
-
+    }
+    try {
+        /* =========================
+           REQUEST BODY
+        ========================= */
         let body = req.body;
-
-        if (typeof body === "string") {
-            body = JSON.parse(body);
+        if (
+            typeof body === "string"
+        ) {
+            try {
+                body =
+                    JSON.parse(body);
+            } catch {
+                return res.status(400).json({
+                    error:
+                        "Invalid request data."
+                });
+            }
         }
-
         const message =
-            String(body?.message || "").trim();
-
+            String(
+                body?.message || ""
+            ).trim();
         if (!message) {
             return res.status(400).json({
-                error: "Please enter a message."
+                error:
+                    "Please enter a message."
             });
         }
-
-        const model =
-            process.env.OPENAI_MODEL || "gpt-5.6";
-
+        /* =========================
+           OPENAI CLIENT
+        ========================= */
+        const client =
+            new OpenAI({
+                apiKey:
+                    apiKey.trim()
+            });
+        /* =========================
+           PRIEST AI
+        ========================= */
         const response =
             await client.responses.create({
-                model: model,
-
+                model:
+                    process.env.OPENAI_MODEL ||
+                    "gpt-5.6",
                 instructions: `
 You are PRIEST AI.
-
-You are a helpful, intelligent and friendly AI assistant.
-
+You are a helpful, intelligent,
+friendly and practical AI assistant.
 Help users with:
-
 • General questions
 • Education
 • Mathematics
@@ -56,65 +82,68 @@ Help users with:
 • HTML
 • CSS
 • JavaScript
-• Node.js
-• System Administration
 • Web development
-• Business
+• System Administration
 • Technology
-• Artificial Intelligence
+• Business ideas
 • Writing
 • Creativity
 • Problem solving
-
-Answer accurately and clearly.
-
+• AI education
+Give accurate and useful answers.
 When explaining difficult topics,
-use simple step-by-step explanations.
-
+teach them step by step.
 When providing programming help:
-• Give complete working code when requested.
-• Clearly identify which file the code belongs in.
-• Do not expose API keys or secrets.
+• Give complete code when requested.
+• Clearly explain where files belong.
+• Do not expose API keys.
+• Keep backend secrets on the server.
 • Do not unnecessarily destroy working code.
-• Explain important changes.
-
+For cybersecurity questions,
+provide legal and ethical educational
+information and do not help users
+steal accounts, passwords or credentials.
 For the PRIEST AI project:
-• Keep API keys on the server.
-• Never place secret keys in browser JavaScript.
-• Use practical instructions.
-• Preserve working functionality.
-
-If you don't know something,
-say so instead of inventing information.
-
-Be concise for simple questions
-and detailed when the user needs it.
-
-You are PRIEST AI.
-`,
-
-                input: message
+• The frontend communicates with
+  backend API endpoints.
+• API keys must remain on the server.
+• Never place OPENAI_API_KEY inside
+  browser JavaScript.
+Be honest when you are uncertain.
+Keep simple answers concise.
+Give detailed explanations when needed.
+Be friendly and professional.
+                `,
+                input:
+                    message
             });
-
+        /* =========================
+           RESPONSE
+        ========================= */
         const answer =
-            response.output_text ||
-            "PRIEST AI could not generate a response.";
-
+            response?.output_text;
+        if (!answer) {
+            return res.status(500).json({
+                error:
+                    "The AI provider returned no text response."
+            });
+        }
         return res.status(200).json({
-            answer: answer
+            answer:
+                answer
         });
-
     } catch (error) {
-
         console.error(
             "PRIEST AI CHAT ERROR:",
             error
         );
-
+        /* =========================
+           API ERROR
+        ========================= */
         return res.status(500).json({
             error:
                 error?.message ||
-                "PRIEST AI chat failed."
+                "PRIEST AI could not process your request."
         });
     }
 };
