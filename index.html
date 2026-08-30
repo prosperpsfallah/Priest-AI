@@ -2,288 +2,50 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    >
-    <meta
-        name="theme-color"
-        content="#080a0f"
-    >
-    <meta
-        name="description"
-        content="PRIEST AI — Your intelligent AI assistant for coding, learning, creativity and image editing."
-    >
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
-    <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="black-translucent"
-    >
-    <meta
-        name="apple-mobile-web-app-title"
-        content="PRIEST AI"
-    >
-    <meta
-        name="mobile-web-app-capable"
-        content="yes"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRIEST AI</title>
-    <link
-        rel="stylesheet"
-        href="/style.css"
-    >
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #080a0f;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .box {
+            padding: 40px;
+        }
+        .logo {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 20px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #ffd000, #ff7900);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            font-weight: 900;
+        }
+        h1 {
+            margin: 0 0 10px;
+        }
+        p {
+            color: #9aa3b2;
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-logo">
-                P
-            </div>
-            <div>
-                <h2>
-                    PRIEST AI
-                </h2>
-                <small>
-                    AI Assistant
-                </small>
-            </div>
-        </div>
-        <button
-            type="button"
-            class="new-chat"
-            onclick="newChat()"
-        >
-            ＋ New Chat
-        </button>
-        <nav>
-            <button
-                type="button"
-                onclick="showHome()"
-            >
-                🏠 Home
-            </button>
-            <button
-                type="button"
-                onclick="focusInput()"
-            >
-                💬 Chat
-            </button>
-            <button
-                type="button"
-                onclick="openImageEditor()"
-            >
-                🖼️ AI Image Editor
-            </button>
-            <button
-                type="button"
-                onclick="clearChat()"
-            >
-                🗑️ Clear Chat
-            </button>
-        </nav>
-        <div class="sidebar-footer">
-            <strong>
-                PRIEST AI
-            </strong>
-            <p>
-                Smart assistance for coding,
-                learning, creativity and more.
-            </p>
-            <span>
-                Version 1.0
-            </span>
-        </div>
-    </aside>
-    <!-- MAIN -->
-    <main class="main">
-        <!-- HEADER -->
-        <header class="header">
-            <div>
-                <h1>
-                    PRIEST AI
-                </h1>
-                <div class="online-status">
-                    <span></span>
-                    AI Online
-                </div>
-            </div>
-            <button
-                type="button"
-                class="mobile-menu"
-                onclick="toggleSidebar()"
-            >
-                ☰
-            </button>
-        </header>
-        <!-- CHAT -->
-        <section
-            class="chat"
-            id="chat"
-        >
-            <div class="welcome">
-                <div class="big-logo">
-                    P
-                </div>
-                <h2>
-                    Welcome to PRIEST AI 👋
-                </h2>
-                <p>
-                    Your AI assistant for questions,
-                    coding, learning, writing,
-                    ideas and image editing.
-                </p>
-                <div class="suggestions">
-                    <button
-                        type="button"
-                        onclick="sendSuggestion(
-                            'Teach me programming from beginner level'
-                        )"
-                    >
-                        💻 Learn Programming
-                    </button>
-                    <button
-                        type="button"
-                        onclick="sendSuggestion(
-                            'Help me build a professional website'
-                        )"
-                    >
-                        🌐 Build a Website
-                    </button>
-                    <button
-                        type="button"
-                        onclick="sendSuggestion(
-                            'Explain artificial intelligence simply'
-                        )"
-                    >
-                        🤖 Explain AI
-                    </button>
-                    <button
-                        type="button"
-                        onclick="sendSuggestion(
-                            'Give me a legal and ethical cybersecurity learning idea'
-                        )"
-                    >
-                        🔐 Cybersecurity
-                    </button>
-                </div>
-            </div>
-        </section>
-        <!-- IMAGE EDITOR -->
-        <section
-            class="image-editor"
-            id="imageEditor"
-        >
-            <div class="editor-header">
-                <div>
-                    <h2>
-                        🖼️ PRIEST AI Image Editor
-                    </h2>
-                    <p>
-                        Upload an image and describe
-                        what you want changed.
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    onclick="closeImageEditor()"
-                >
-                    ✕
-                </button>
-            </div>
-            <div class="upload-area">
-                <input
-                    type="file"
-                    id="imageInput"
-                    accept="image/png,image/jpeg,image/webp"
-                    onchange="previewImage(event)"
-                >
-                <label for="imageInput">
-                    <div class="upload-icon">
-                        📸
-                    </div>
-                    <strong>
-                        Choose an image
-                    </strong>
-                    <span>
-                        JPG, PNG or WebP
-                    </span>
-                </label>
-            </div>
-            <div
-                class="preview-container"
-                id="previewContainer"
-            >
-                <img
-                    id="imagePreview"
-                    alt="Selected image preview"
-                >
-            </div>
-            <textarea
-                id="editPrompt"
-                placeholder="Describe what you want PRIEST AI to change..."
-            ></textarea>
-            <label class="watermark-option">
-                <input
-                    type="checkbox"
-                    id="watermark"
-                    checked
-                >
-                Add PRIEST AI watermark
-            </label>
-            <button
-                type="button"
-                class="edit-button"
-                onclick="editImage()"
-            >
-                ✨ Edit Image
-            </button>
-            <div
-                class="result-container"
-                id="resultContainer"
-            >
-                <img
-                    id="resultImage"
-                    alt="Edited image"
-                >
-                <a
-                    id="downloadButton"
-                    href="#"
-                    download="priest-ai-edited.png"
-                >
-                    Download Image
-                </a>
-            </div>
-        </section>
-        <!-- INPUT -->
-        <div class="input-area">
-            <div class="input-box">
-                <textarea
-                    id="message"
-                    rows="1"
-                    placeholder="Ask PRIEST AI anything..."
-                    onkeydown="handleKey(event)"
-                ></textarea>
-                <button
-                    type="button"
-                    class="send-button"
-                    onclick="sendMessage()"
-                    aria-label="Send message"
-                >
-                    ➤
-                </button>
-            </div>
-            <p class="disclaimer">
-                PRIEST AI may make mistakes.
-                Verify important information.
-            </p>
-        </div>
-    </main>
-</div>
-<script src="/script.js"></script>
+    <div class="box">
+        <div class="logo">P</div>
+        <h1>PRIEST AI</h1>
+        <p>PRIEST AI is loading successfully.</p>
+        <p>Frontend connection test: ✅</p>
+    </div>
 </body>
 </html>
