@@ -2,11 +2,8 @@
   "name": "priest-ai",
   "version": "1.0.0",
   "description": "PRIEST AI Assistant",
-  "main": "api/chat.js",
-  "scripts": {
-    "start": "node api/chat.js"
-  },
+  "private": true,
   "dependencies": {
-    "groq-sdk": "^0.33.0"
+    "groq-sdk": "^0.9.0"
   }
 }
