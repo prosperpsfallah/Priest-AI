@@ -1,12 +1,12 @@
 {
-  "name": "priest-ai-backend",
+  "name": "priest-ai",
   "version": "1.0.0",
-  "type": "module",
-  "main": "server.js",
+  "description": "PRIEST AI - AI Assistant",
+  "main": "api/chat.js",
+  "scripts": {
+    "start": "node api/chat.js"
+  },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "openai": "^4.52.7",
-    "serverless-http": "^3.2.0"
+    "groq-sdk": "^0.33.0"
   }
 }
