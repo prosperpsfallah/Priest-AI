@@ -1,87 +1,41 @@
 const Groq = require("groq-sdk");
-
 module.exports = async function handler(req, res) {
-
-    // ==============================
-    // ONLY ALLOW POST REQUESTS
-    // ==============================
-
+    // Only accept POST requests
     if (req.method !== "POST") {
         return res.status(405).json({
             success: false,
             error: "Method not allowed. Use POST."
         });
     }
-
-
     try {
-
-        // ==============================
-        // GET GROQ API KEY
-        // ==============================
-
+        // Get API key
         const apiKey = process.env.GROQ_API_KEY;
-
         if (!apiKey) {
             return res.status(500).json({
                 success: false,
                 error: "GROQ_API_KEY is not configured in Vercel."
             });
         }
-
-
-        // ==============================
-        // GET USER MESSAGE
-        // ==============================
-
-        const body = req.body || {};
-
-        const message = body.message;
-
+        // Get user's message
+        const message = req.body?.message;
         if (!message || typeof message !== "string") {
             return res.status(400).json({
                 success: false,
                 error: "Message is required."
             });
         }
-
-        const cleanMessage = message.trim();
-
-        if (!cleanMessage) {
-            return res.status(400).json({
-                success: false,
-                error: "Please enter a message."
-            });
-        }
-
-
-        // ==============================
-        // CREATE GROQ CLIENT
-        // ==============================
-
+        // Create Groq client
         const groq = new Groq({
             apiKey: apiKey
         });
-
-
-        // ==============================
-        // GET AVAILABLE MODELS
-        // ==============================
-
-        const modelList = await groq.models.list();
-
-        const models = modelList.data || [];
-
+        // Get models available to this API key
+        const modelResponse = await groq.models.list();
+        const models = modelResponse.data || [];
         console.log(
-            "GROQ AVAILABLE MODELS:",
+            "AVAILABLE MODELS:",
             models.map(model => model.id)
         );
-
-
-        // ==============================
-        // FIND A CHAT MODEL
-        // ==============================
-
+        // Models we prefer
         const preferredModels = [
             "openai/gpt-oss-120b",
             "openai/gpt-oss-20b",
@@ -89,35 +43,23 @@ module.exports = async function handler(req, res) {
             "llama-3.1-8b-instant",
             "qwen/qwen3-32b"
         ];
-
-
+        // Find an available preferred model
         let selectedModel = null;
-
-
-        for (const preferred of preferredModels) {
-
-            const found = models.find(
-                model => model.id === preferred
-            );
-
-            if (found) {
-                selectedModel = found.id;
+        for (const preferredModel of preferredModels) {
+            if (
+                models.some(
+                    model => model.id === preferredModel
+                )
+            ) {
+                selectedModel = preferredModel;
                 break;
             }
-
         }
-
-
-        // ==============================
-        // FALLBACK MODEL
-        // ==============================
-
+        // If none of the preferred models are available,
+        // find another likely text-generation model.
         if (!selectedModel) {
-
-            const chatModel = models.find(model => {
-
-                const id = (model.id || "").toLowerCase();
-
+            const fallback = models.find(model => {
+                const id = String(model.id || "").toLowerCase();
                 return (
                     !id.includes("whisper") &&
                     !id.includes("tts") &&
@@ -125,152 +67,72 @@ module.exports = async function handler(req, res) {
                     !id.includes("safeguard") &&
                     !id.includes("embedding")
                 );
-
             });
-
-
-            if (chatModel) {
-                selectedModel = chatModel.id;
+            if (fallback) {
+                selectedModel = fallback.id;
             }
-
         }
-
-
-        // ==============================
-        // NO MODEL AVAILABLE
-        // ==============================
-
+        // No usable model
         if (!selectedModel) {
-
             return res.status(500).json({
-
                 success: false,
-
-                error:
-                    "No usable Groq chat model is available for this API key.",
-
-                availableModels:
-                    models.map(model => model.id)
-
+                error: "No usable Groq chat model is available.",
+                availableModels: models.map(model => model.id)
             });
-
         }
-
-
         console.log(
-            "PRIEST AI MODEL:",
+            "PRIEST AI SELECTED MODEL:",
             selectedModel
         );
-
-
-        // ==============================
-        // SEND MESSAGE TO GROQ
-        // ==============================
-
+        // Send message to Groq
         const completion =
             await groq.chat.completions.create({
-
                 model: selectedModel,
-
                 messages: [
-
                     {
                         role: "system",
-
                         content:
-                            "You are PRIEST AI, a powerful, helpful, friendly and intelligent AI assistant. " +
-                            "Answer the user's questions clearly and accurately. " +
-                            "Help with education, programming, writing, technology, business, creativity and general questions. " +
-                            "Explain complicated subjects in simple language when useful. " +
-                            "Be conversational and respectful. " +
-                            "Never pretend to know something you do not know."
+                            "You are PRIEST AI, a helpful, intelligent and friendly AI assistant. " +
+                            "Answer questions clearly and accurately. " +
+                            "Help with education, coding, writing, technology, business and general questions. " +
+                            "Explain difficult topics simply when appropriate. " +
+                            "Be conversational and helpful. " +
+                            "If you do not know something, say so instead of making up information."
                     },
-
                     {
                         role: "user",
-
-                        content: cleanMessage
+                        content: message.trim()
                     }
-
                 ],
-
                 temperature: 0.7,
-
                 max_tokens: 2048
-
             });
-
-
-        // ==============================
-        // GET AI RESPONSE
-        // ==============================
-
+        // Extract answer
         const reply =
-            completion &&
-            completion.choices &&
-            completion.choices[0] &&
-            completion.choices[0].message &&
-            completion.choices[0].message.content;
-
-
-        // ==============================
-        // CHECK AI RESPONSE
-        // ==============================
-
+            completion?.choices?.[0]?.message?.content;
         if (!reply) {
-
             return res.status(500).json({
-
                 success: false,
-
-                error:
-                    "Groq connected successfully, but PRIEST AI returned no response.",
-
+                error: "PRIEST AI returned an empty response.",
                 model: selectedModel
-
             });
-
         }
-
-
-        // ==============================
-        // RETURN RESPONSE
-        // ==============================
-
+        // Return answer
         return res.status(200).json({
-
             success: true,
-
             model: selectedModel,
-
             reply: reply.trim()
-
         });
-
-
     } catch (error) {
-
         console.error(
             "PRIEST AI BACKEND ERROR:",
             error
         );
-
-
-        // ==============================
-        // RETURN REAL ERROR
-        // ==============================
-
         return res.status(500).json({
-
             success: false,
-
             error:
-                error && error.message
-                    ? error.message
-                    : "Something went wrong with the Groq API."
-
+                error?.message ||
+                "Something went wrong with the Groq API."
         });
-
     }
-
 };
