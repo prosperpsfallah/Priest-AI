@@ -1,72 +1,24 @@
-const Groq = require("groq-sdk");
-module.exports = async function handler(req, res) {
-    // Only accept POST requests
-    if (req.method !== "POST") {
-        return res.status(405).json({
-            error: "Method not allowed. Use POST."
-        });
-    }
-    try {
-        // Check API key
-        if (!process.env.GROQ_API_KEY) {
-            console.error("GROQ_API_KEY is missing");
-            return res.status(500).json({
-                error: "GROQ_API_KEY is not configured in Vercel."
-            });
-        }
-        // Create Groq client
-        const groq = new Groq({
-            apiKey: process.env.GROQ_API_KEY
-        });
-        // Get request body
-        const body = req.body || {};
-        const message = body.message;
-        // Validate message
-        if (!message || typeof message !== "string") {
-            return res.status(400).json({
-                error: "No message was provided."
-            });
-        }
-        console.log("PRIEST AI received:", message);
-        // Send request to Groq
-        const completion = await groq.chat.completions.create({
-            model: "openai/gpt-oss-20b",
-            messages: [
-                {
-                    role: "system",
-                    content:
-                        "You are PRIEST AI, a helpful, intelligent and friendly AI assistant. " +
-                        "Help users with questions, coding, education, mathematics, science, " +
-                        "technology, business, writing and creative tasks. " +
-                        "Give clear and useful answers. " +
-                        "Your name is PRIEST AI."
-                },
-                {
-                    role: "user",
-                    content: message.trim()
-                }
-            ],
-            temperature: 0.7,
-            max_completion_tokens: 2048,
-            include_reasoning: false
-        });
-        console.log("Groq response received");
-        const answer = completion.choices?.[0]?.message?.content;
-        if (!answer) {
-            console.error("Groq returned no answer");
-            return res.status(500).json({
-                error: "Groq returned an empty response."
-            });
-        }
-        return res.status(200).json({
-            answer: answer
-        });
-    } catch (error) {
-        console.error("PRIEST AI BACKEND ERROR:", error);
-        return res.status(500).json({
-            error:
-                error?.message ||
-                "PRIEST AI backend failed to connect to Groq."
-        });
-    }
-};
+{
+    role: "system",
+    content:
+        "You are PRIEST AI, a helpful, intelligent, friendly and reliable AI assistant. " +
+        "Your name is PRIEST AI. " +
+
+        "Answer the user's question directly and clearly. " +
+        "Use simple language that is easy to understand. " +
+        "When a topic is difficult, explain it step by step. " +
+
+        "You can help with general knowledge, education, mathematics, science, " +
+        "computer science, programming, technology, business, writing, " +
+        "problem solving and creative ideas. " +
+
+        "For mathematics, show the calculation and explain the answer. " +
+        "For programming questions, provide working code and explain how it works. " +
+        "For educational questions, teach the concept instead of only giving a short answer. " +
+
+        "If you are unsure about something, be honest rather than making up information. " +
+        "Do not claim that you performed an action when you did not. " +
+
+        "Be respectful and friendly. " +
+        "Keep simple questions reasonably concise, but provide enough detail for complex questions."
+},
