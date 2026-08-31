@@ -1,97 +1,72 @@
 const Groq = require("groq-sdk");
-
-const groq = new Groq({
-    apiKey: process.env.GROQ_API_KEY
-});
-
 module.exports = async function handler(req, res) {
-
-    // Only allow POST requests
+    // Only accept POST requests
     if (req.method !== "POST") {
         return res.status(405).json({
-            error: "Method not allowed"
+            error: "Method not allowed. Use POST."
         });
     }
-
     try {
-
-        // Get message from frontend
-        const { message } = req.body || {};
-
-        // Check if message exists
-        if (!message || typeof message !== "string") {
-            return res.status(400).json({
-                error: "Please provide a message."
+        // Check API key
+        if (!process.env.GROQ_API_KEY) {
+            console.error("GROQ_API_KEY is missing");
+            return res.status(500).json({
+                error: "GROQ_API_KEY is not configured in Vercel."
             });
         }
-
-        // Send message to Groq
+        // Create Groq client
+        const groq = new Groq({
+            apiKey: process.env.GROQ_API_KEY
+        });
+        // Get request body
+        const body = req.body || {};
+        const message = body.message;
+        // Validate message
+        if (!message || typeof message !== "string") {
+            return res.status(400).json({
+                error: "No message was provided."
+            });
+        }
+        console.log("PRIEST AI received:", message);
+        // Send request to Groq
         const completion = await groq.chat.completions.create({
             model: "openai/gpt-oss-20b",
-
             messages: [
                 {
                     role: "system",
-                    content: `
-You are PRIEST AI, a helpful, intelligent and friendly AI assistant.
-
-Your job is to help users with:
-- Questions
-- Programming
-- Website development
-- School work
-- Mathematics
-- Science
-- Writing
-- Ideas
-- Business
-- Technology
-- General knowledge
-- Creative work
-
-Be clear, useful and conversational.
-
-When explaining programming:
-- Give working code when appropriate.
-- Explain important parts clearly.
-- Do not unnecessarily make answers complicated.
-
-When you don't know something, be honest.
-
-Your name is PRIEST AI.
-                    `.trim()
+                    content:
+                        "You are PRIEST AI, a helpful, intelligent and friendly AI assistant. " +
+                        "Help users with questions, coding, education, mathematics, science, " +
+                        "technology, business, writing and creative tasks. " +
+                        "Give clear and useful answers. " +
+                        "Your name is PRIEST AI."
                 },
                 {
                     role: "user",
                     content: message.trim()
                 }
             ],
-
             temperature: 0.7,
-            max_completion_tokens: 4096
+            max_completion_tokens: 2048,
+            include_reasoning: false
         });
-
-        // Get AI response
-        const answer =
-            completion.choices?.[0]?.message?.content;
-
+        console.log("Groq response received");
+        const answer = completion.choices?.[0]?.message?.content;
         if (!answer) {
+            console.error("Groq returned no answer");
             return res.status(500).json({
-                error: "PRIEST AI did not return an answer."
+                error: "Groq returned an empty response."
             });
         }
-
-        // Send answer back to frontend
         return res.status(200).json({
             answer: answer
         });
-
     } catch (error) {
-
-        console.error("GROQ ERROR:", error);
-
+        console.error("PRIEST AI BACKEND ERROR:", error);
         return res.status(500).json({
-            error: error.message || "Failed to connect to Groq."
+            error:
+                error?.message ||
+                "PRIEST AI backend failed to connect to Groq."
         });
     }
 };
