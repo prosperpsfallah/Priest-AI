@@ -1,702 +1,242 @@
-console.log("PRIEST AI SCRIPT LOADED");
-
-const chat = document.getElementById("chat");
-const input = document.getElementById("messageInput");
-const form = document.getElementById("chatForm");
-const sendButton = document.getElementById("sendButton");
-
-
-/* =====================================================
-   THEME TOGGLE
-===================================================== */
-
-const themeToggle = document.getElementById("themeToggle");
-
-if (themeToggle) {
-
-    themeToggle.addEventListener("click", function () {
-
-        document.body.classList.toggle("light");
-
-        if (document.body.classList.contains("light")) {
-            this.textContent = "🌙";
-            localStorage.setItem("theme", "light");
-        } else {
-            this.textContent = "☀️";
-            localStorage.setItem("theme", "dark");
-        }
-
-    });
-
-
-    /* Load saved theme */
-
-    if (localStorage.getItem("theme") === "light") {
-
-        document.body.classList.add("light");
-
-        themeToggle.textContent = "🌙";
+const chatContainer = document.getElementById("chatContainer");
+const welcomeScreen = document.getElementById("welcomeScreen");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const newChatBtn = document.getElementById("newChatBtn");
+const clearChatBtn = document.getElementById("clearChatBtn");
+const chatMenuBtn = document.getElementById("chatMenuBtn");
+const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+const sidebar = document.querySelector(".sidebar");
+let isSending = false;
+/* =========================
+   ADD MESSAGE
+========================= */
+function addMessage(text, sender) {
+    if (welcomeScreen) {
+        welcomeScreen.style.display = "none";
     }
+    const message = document.createElement("div");
+    message.className = `message ${sender}`;
+    const avatar = document.createElement("div");
+    avatar.className = "message-avatar";
+    avatar.textContent = sender === "user" ? "U" : "P";
+    const content = document.createElement("div");
+    content.className = "message-content";
+    const name = document.createElement("div");
+    name.className = "message-name";
+    name.textContent = sender === "user" ? "You" : "PRIEST AI";
+    const messageText = document.createElement("div");
+    messageText.className = "message-text";
+    // textContent keeps user/AI messages from being treated as HTML
+    messageText.textContent = text;
+    content.appendChild(name);
+    content.appendChild(messageText);
+    if (sender === "user") {
+        message.appendChild(content);
+        message.appendChild(avatar);
+    } else {
+        message.appendChild(avatar);
+        message.appendChild(content);
+    }
+    chatContainer.appendChild(message);
+    scrollToBottom();
 }
-
-
-/* =====================================================
-   CHECK IF USER WANTS AN IMAGE
-===================================================== */
-
-function isImageRequest(text) {
-
-    const message = text.toLowerCase();
-
-    const imageWords = [
-        "generate an image",
-        "generate image",
-        "create an image",
-        "create image",
-        "make an image",
-        "make image",
-        "draw an image",
-        "draw image",
-        "generate a picture",
-        "create a picture",
-        "make a picture",
-        "draw a picture",
-        "create artwork",
-        "generate artwork",
-        "make artwork",
-        "image of",
-        "picture of"
-    ];
-
-    return imageWords.some(function(word) {
-        return message.includes(word);
-    });
-}
-
-
-/* =====================================================
-   SEND MESSAGE
-===================================================== */
-
-async function sendMessage() {
-
-    console.log("SEND BUTTON WORKING");
-
-    const text = input.value.trim();
-
-    if (!text) {
-        return;
-    }
-
-
-    /* Remove welcome screen */
-
-    const welcome = document.getElementById("welcome");
-
-    if (welcome) {
-        welcome.remove();
-    }
-
-
-    /* Show user's message */
-
-    addMessage("You", text, "user");
-
-    input.value = "";
-
-
-    /* Show thinking message */
-
-    const thinking = document.createElement("div");
-
-    thinking.id = "thinking";
-
-    thinking.className = "message ai";
-
-    thinking.innerHTML = `
+/* =========================
+   TYPING INDICATOR
+========================= */
+function showTyping() {
+    const typing = document.createElement("div");
+    typing.className = "message ai";
+    typing.id = "typingIndicator";
+    typing.innerHTML = `
         <div class="message-avatar">P</div>
-
         <div class="message-content">
-
-            <strong>PRIEST AI</strong>
-
-            <div style="margin-top:4px;">
-                Thinking... 🤔
+            <div class="message-name">
+                PRIEST AI
             </div>
-
+            <div class="message-text typing">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     `;
-
-    chat.appendChild(thinking);
-
-    chat.scrollTop = chat.scrollHeight;
-
-
+    chatContainer.appendChild(typing);
+    scrollToBottom();
+}
+/* =========================
+   REMOVE TYPING
+========================= */
+function removeTyping() {
+    const typing = document.getElementById("typingIndicator");
+    if (typing) {
+        typing.remove();
+    }
+}
+/* =========================
+   SCROLL
+========================= */
+function scrollToBottom() {
+    setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 50);
+}
+/* =========================
+   SEND MESSAGE
+========================= */
+async function sendMessage() {
+    if (isSending) {
+        return;
+    }
+    const message = messageInput.value.trim();
+    if (!message) {
+        return;
+    }
+    isSending = true;
+    sendBtn.disabled = true;
+    addMessage(message, "user");
+    messageInput.value = "";
+    messageInput.style.height = "auto";
+    showTyping();
     try {
-
-        /* =================================================
-           IMAGE REQUEST
-        ================================================= */
-
-        if (isImageRequest(text)) {
-
-            console.log("IMAGE REQUEST DETECTED");
-
-            thinking.querySelector(".message-content").innerHTML = `
-                <strong>PRIEST AI</strong>
-
-                <div style="margin-top:4px;">
-                    Creating your image... 🎨
-                </div>
-            `;
-
-
-            console.log("Calling /api/generate-image...");
-
-
-            const response = await fetch("/api/generate-image", {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-                    prompt: text
-                })
-
-            });
-
-
-            console.log(
-                "IMAGE API STATUS:",
-                response.status
-            );
-
-
-            const raw = await response.text();
-
-
-            console.log(
-                "IMAGE API RESPONSE:",
-                raw
-            );
-
-
-            thinking.remove();
-
-
-            let data = {};
-
-            try {
-
-                data = JSON.parse(raw);
-
-            } catch {
-
-                data = {
-                    error:
-                        raw ||
-                        "The image server returned an invalid response."
-                };
-
-            }
-
-
-            if (!response.ok) {
-
-                addMessage(
-                    "PRIEST AI",
-                    "Image generation error: " +
-                    (data.error || "Unknown error"),
-                    "ai"
-                );
-
-                return;
-            }
-
-
-            /*
-             * The backend should return:
-             *
-             * {
-             *     "image": "IMAGE_URL"
-             * }
-             */
-
-            if (!data.image) {
-
-                addMessage(
-                    "PRIEST AI",
-                    "The image server did not return an image.",
-                    "ai"
-                );
-
-                return;
-            }
-
-
-            /* Display generated image */
-
-            addImageMessage(
-                "PRIEST AI",
-                data.image
-            );
-
-
-            return;
-        }
-
-
-        /* =================================================
-           NORMAL TEXT QUESTION
-        ================================================= */
-
-        console.log("Calling /api/chat...");
-
-
         const response = await fetch("/api/chat", {
-
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
-                message: text
+                message: message
             })
-
         });
-
-
-        console.log(
-            "API STATUS:",
-            response.status
-        );
-
-
-        const raw = await response.text();
-
-
-        console.log(
-            "API RESPONSE:",
-            raw
-        );
-
-
-        thinking.remove();
-
-
-        let data = {};
-
+        let data;
         try {
-
-            data = JSON.parse(raw);
-
-        } catch {
-
-            data = {
-                error:
-                    raw ||
-                    "The server returned an invalid response."
-            };
-
-        }
-
-
-        if (!response.ok) {
-
-            addMessage(
-                "PRIEST AI",
-                "Server error: " +
-                (data.error || "Unknown error"),
-                "ai"
+            data = await response.json();
+        } catch (jsonError) {
+            throw new Error(
+                "The server returned an invalid response."
             );
-
-            return;
         }
-
-
-        addMessage(
-            "PRIEST AI",
-            data.answer ||
-            "PRIEST AI did not return an answer.",
-            "ai"
-        );
-
-
+        removeTyping();
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                data.message ||
+                `Server error: ${response.status}`
+            );
+        }
+        if (!data.reply) {
+            throw new Error(
+                "PRIEST AI returned no answer."
+            );
+        }
+        addMessage(data.reply, "ai");
     } catch (error) {
-
-        console.error(
-            "PRIEST AI ERROR:",
-            error
-        );
-
-
-        if (thinking) {
-            thinking.remove();
-        }
-
-
+        removeTyping();
+        console.error("PRIEST AI ERROR:", error);
         addMessage(
-            "PRIEST AI",
-            "Connection error: " +
-            error.message,
+            "Sorry, I couldn't connect to PRIEST AI right now. Please try again.",
             "ai"
         );
+    } finally {
+        isSending = false;
+        sendBtn.disabled = false;
+        messageInput.focus();
     }
 }
-
-
-/* =====================================================
-   ADD NORMAL MESSAGE
-===================================================== */
-
-function addMessage(name, text, type) {
-
-    const message =
-        document.createElement("div");
-
-    message.className =
-        "message " + type;
-
-
-    const avatar =
-        document.createElement("div");
-
-    avatar.className =
-        "message-avatar";
-
-    avatar.textContent =
-        type === "ai" ? "P" : "U";
-
-
-    const content =
-        document.createElement("div");
-
-    content.className =
-        "message-content";
-
-
-    const nameElement =
-        document.createElement("strong");
-
-    nameElement.textContent =
-        name;
-
-
-    const textElement =
-        document.createElement("div");
-
-    textElement.style.marginTop =
-        "4px";
-
-    textElement.textContent =
-        text;
-
-
-    content.appendChild(
-        nameElement
-    );
-
-    content.appendChild(
-        textElement
-    );
-
-
-    message.appendChild(
-        avatar
-    );
-
-    message.appendChild(
-        content
-    );
-
-
-    chat.appendChild(
-        message
-    );
-
-
-    chat.scrollTop =
-        chat.scrollHeight;
-}
-
-
-/* =====================================================
-   ADD GENERATED IMAGE TO CHAT
-===================================================== */
-
-function addImageMessage(name, imageUrl) {
-
-    const message =
-        document.createElement("div");
-
-    message.className =
-        "message ai";
-
-
-    const avatar =
-        document.createElement("div");
-
-    avatar.className =
-        "message-avatar";
-
-    avatar.textContent =
-        "P";
-
-
-    const content =
-        document.createElement("div");
-
-    content.className =
-        "message-content";
-
-
-    const nameElement =
-        document.createElement("strong");
-
-    nameElement.textContent =
-        name;
-
-
-    const image =
-        document.createElement("img");
-
-    image.src =
-        imageUrl;
-
-    image.alt =
-        "Generated by PRIEST AI";
-
-
-    image.style.display =
-        "block";
-
-    image.style.width =
-        "100%";
-
-    image.style.maxWidth =
-        "600px";
-
-    image.style.marginTop =
-        "10px";
-
-    image.style.borderRadius =
-        "12px";
-
-
-    image.onerror =
-        function() {
-
-            console.error(
-                "Generated image could not be loaded."
-            );
-
-            image.replaceWith(
-                document.createTextNode(
-                    "The generated image could not be displayed."
-                )
-            );
-        };
-
-
-    content.appendChild(
-        nameElement
-    );
-
-    content.appendChild(
-        image
-    );
-
-
-    message.appendChild(
-        avatar
-    );
-
-    message.appendChild(
-        content
-    );
-
-
-    chat.appendChild(
-        message
-    );
-
-
-    chat.scrollTop =
-        chat.scrollHeight;
-}
-
-
-/* =====================================================
-   FORM SUBMIT
-===================================================== */
-
-if (form) {
-
-    form.addEventListener(
-        "submit",
-        function(event) {
-
-            event.preventDefault();
-
-            sendMessage();
-        }
-    );
-}
-
-
-/* =====================================================
-   SUGGESTIONS
-===================================================== */
-
-document
-    .querySelectorAll(".suggestion")
-    .forEach(function(button) {
-
-        button.addEventListener(
-            "click",
-            function() {
-
-                input.value =
-                    button.dataset.prompt;
-
-                sendMessage();
-            }
+/* =========================
+   SEND BUTTON
+========================= */
+sendBtn.addEventListener("click", () => {
+    sendMessage();
+});
+/* =========================
+   ENTER TO SEND
+========================= */
+messageInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+});
+/* =========================
+   AUTO RESIZE TEXTAREA
+========================= */
+messageInput.addEventListener("input", () => {
+    messageInput.style.height = "auto";
+    messageInput.style.height =
+        Math.min(messageInput.scrollHeight, 140) + "px";
+});
+/* =========================
+   SUGGESTION BUTTONS
+========================= */
+document.querySelectorAll(".suggestion-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+        messageInput.value = button.textContent.trim();
+        messageInput.dispatchEvent(
+            new Event("input")
         );
+        messageInput.focus();
     });
-
-
-/* =====================================================
+});
+/* =========================
    NEW CHAT
-===================================================== */
-
-const newChatBtn =
-    document.getElementById("newChat");
-
-
-if (newChatBtn) {
-
-    newChatBtn.addEventListener(
-        "click",
-        function() {
-
-            chat.innerHTML = `
-
-                <div
-                    class="welcome"
-                    id="welcome"
-                >
-
-                    <div class="welcome-logo">
-                        P
-                    </div>
-
-                    <h1>
-                        PRIEST AI
-                    </h1>
-
-                    <p>
-                        Your AI assistant for questions,
-                        ideas, coding, learning and
-                        creative work.
-                    </p>
-
-                    <div class="suggestions">
-
-                        <button
-                            class="suggestion"
-                            type="button"
-                            data-prompt="What can you help me with?"
-                        >
-                            What can you help me with?
-                        </button>
-
-
-                        <button
-                            class="suggestion"
-                            type="button"
-                            data-prompt="Help me write some code"
-                        >
-                            Help me write some code
-                        </button>
-
-
-                        <button
-                            class="suggestion"
-                            type="button"
-                            data-prompt="Create an image of a beautiful Liberian city at sunset"
-                        >
-                            Create an image
-                        </button>
-
-                    </div>
-
-                </div>
-            `;
-
-
-            attachSuggestionListeners();
-        }
-    );
-}
-
-
-/* =====================================================
-   RE-ATTACH SUGGESTION BUTTONS
-===================================================== */
-
-function attachSuggestionListeners() {
-
+========================= */
+newChatBtn.addEventListener("click", () => {
+    chatContainer
+        .querySelectorAll(".message")
+        .forEach((message) => message.remove());
+    if (welcomeScreen) {
+        welcomeScreen.style.display = "block";
+    }
+    messageInput.value = "";
+    messageInput.style.height = "auto";
+    messageInput.focus();
+});
+/* =========================
+   CLEAR CHAT
+========================= */
+clearChatBtn.addEventListener("click", () => {
+    chatContainer
+        .querySelectorAll(".message")
+        .forEach((message) => message.remove());
+    if (welcomeScreen) {
+        welcomeScreen.style.display = "block";
+    }
+});
+/* =========================
+   CHAT MENU
+========================= */
+chatMenuBtn.addEventListener("click", () => {
     document
-        .querySelectorAll(".suggestion")
-        .forEach(function(button) {
-
-            button.addEventListener(
-                "click",
-                function() {
-
-                    input.value =
-                        button.dataset.prompt;
-
-                    sendMessage();
-                }
-            );
+        .querySelectorAll(".side-btn")
+        .forEach((button) => {
+            button.classList.remove("active");
         });
-}
-
-
-/* =====================================================
-   MOBILE MENU
-===================================================== */
-
-const menuButton =
-    document.getElementById("menuButton");
-
-
-if (menuButton) {
-
-    menuButton.addEventListener(
-        "click",
-        function() {
-
-            const sidebar =
-                document.getElementById("sidebar");
-
-            if (sidebar) {
-
-                sidebar.classList.toggle(
-                    "open"
-                );
-            }
-        }
-    );
-}
-
-
-console.log(
-    "PRIEST AI READY"
-);
+    chatMenuBtn.classList.add("active");
+});
+/* =========================
+   MOBILE SIDEBAR
+========================= */
+mobileMenuBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+});
+/* =========================
+   CLOSE MOBILE SIDEBAR
+========================= */
+document.addEventListener("click", (event) => {
+    if (window.innerWidth > 700) {
+        return;
+    }
+    if (
+        sidebar.classList.contains("open") &&
+        !sidebar.contains(event.target) &&
+        !mobileMenuBtn.contains(event.target)
+    ) {
+        sidebar.classList.remove("open");
+    }
+});
+/* =========================
+   STARTUP
+========================= */
+console.log("PRIEST AI frontend loaded successfully.");
+messageInput.focus();
