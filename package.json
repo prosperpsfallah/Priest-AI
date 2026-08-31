@@ -4,6 +4,6 @@
   "description": "PRIEST AI Assistant",
   "private": true,
   "dependencies": {
-    "groq-sdk": "^0.9.0"
+    "groq-sdk": "^1.0.0"
   }
 }
