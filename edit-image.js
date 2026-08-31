@@ -1,154 +1,291 @@
-console.log("PRIEST AI EDIT-IMAGE.JS LOADED");
+// ============================================
+// PRIEST AI - IMAGE EDITOR
+// edit-image.js
+// ============================================
+
+console.log("PRIEST AI IMAGE EDITOR LOADED");
+
+// -----------------------------
+// ELEMENTS
+// -----------------------------
 
 const imageInput = document.getElementById("imageInput");
-const imageUploadBtn = document.querySelector(".image-upload");
-let uploadedImageBase64 = null;
+const imagePreview = document.getElementById("imagePreview");
+const previewContainer = document.getElementById("previewContainer");
+const promptInput = document.getElementById("editPrompt");
+const editButton = document.getElementById("editImageBtn");
+const generateButton = document.getElementById("generateImageBtn");
+const resultImage = document.getElementById("resultImage");
+const resultContainer = document.getElementById("resultContainer");
+const loadingMessage = document.getElementById("imageLoading");
+const errorMessage = document.getElementById("imageError");
 
-// ================= HANDLE IMAGE UPLOAD =================
+// -----------------------------
+// VARIABLES
+// -----------------------------
+
+let selectedImage = null;
+
+// -----------------------------
+// HELPER FUNCTIONS
+// -----------------------------
+
+function showLoading(show) {
+    if (!loadingMessage) return;
+
+    loadingMessage.style.display = show ? "block" : "none";
+}
+
+function showError(message) {
+    if (!errorMessage) return;
+
+    errorMessage.textContent = message;
+    errorMessage.style.display = "block";
+}
+
+function hideError() {
+    if (!errorMessage) return;
+
+    errorMessage.textContent = "";
+    errorMessage.style.display = "none";
+}
+
+function showResult(imageUrl) {
+    if (!resultContainer || !resultImage) return;
+
+    resultImage.src = imageUrl;
+    resultContainer.style.display = "block";
+}
+
+// -----------------------------
+// IMAGE UPLOAD
+// -----------------------------
+
 if (imageInput) {
-    imageInput.addEventListener("change", function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    imageInput.addEventListener("change", function (event) {
 
-        // Check file type
+        hideError();
+
+        const file = event.target.files[0];
+
+        if (!file) {
+            selectedImage = null;
+            return;
+        }
+
+        // Make sure it is an image
         if (!file.type.startsWith("image/")) {
-            alert("Please upload an image file");
+            showError("Please select a valid image.");
+            imageInput.value = "";
+            selectedImage = null;
             return;
         }
 
-        // Check file size - max 5MB
-        if (file.size > 5 * 1024 * 1024) {
-            alert("Image is too large. Max 5MB");
-            return;
-        }
+        selectedImage = file;
 
         const reader = new FileReader();
-        reader.onload = function(event) {
-            uploadedImageBase64 = event.target.result;
 
-            // Show preview in chat
-            addImagePreview(uploadedImageBase64, file.name);
+        reader.onload = function (e) {
 
-            // Auto-focus input so user can type prompt
-            document.getElementById("messageInput").focus();
-            document.getElementById("messageInput").placeholder = "Ask about this image...";
+            if (imagePreview) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = "block";
+            }
+
+            if (previewContainer) {
+                previewContainer.style.display = "block";
+            }
         };
+
         reader.readAsDataURL(file);
     });
 }
 
-// ================= ADD IMAGE PREVIEW =================
-function addImagePreview(base64, filename) {
-    const chat = document.getElementById("chat");
-    const welcome = document.getElementById("welcome");
-    if (welcome) welcome.remove();
+// -----------------------------
+// GENERATE NEW IMAGE
+// -----------------------------
 
-    const message = document.createElement("div");
-    message.className = "message user";
+async function generateImage() {
 
-    const avatar = document.createElement("div");
-    avatar.className = "message-avatar";
-    avatar.textContent = "U";
+    hideError();
 
-    const content = document.createElement("div");
-    content.className = "message-content";
-    content.innerHTML = `
-        <strong>You</strong>
-        <div style="margin-top: 8px;">
-            <img src="${base64}" style="max-width: 300px; max-height: 300px; border-radius: 12px; border: 1px solid var(--border2);" />
-            <div style="font-size: 12px; color: var(--text3); margin-top: 4px;">${filename}</div>
-        </div>
-    `;
+    const prompt = promptInput ? promptInput.value.trim() : "";
 
-    message.appendChild(avatar);
-    message.appendChild(content);
-    chat.appendChild(message);
-    chat.scrollTop = chat.scrollHeight;
-}
+    if (!prompt) {
+        showError("Please describe the image you want to generate.");
+        return;
+    }
 
-// ================= MODIFY SENDMESSAGE TO INCLUDE IMAGE =================
-// This overrides the sendMessage in chat.js if image is attached
-window.sendMessageWithImage = async function(text) {
-    const chat = document.getElementById("chat");
-
-    // Show thinking
-    const thinking = document.createElement("div");
-    thinking.id = "thinking";
-    thinking.className = "message ai";
-    thinking.innerHTML = `
-        <div class="message-avatar">P</div>
-        <div class="message-content">
-            <strong>PRIEST AI</strong><br>
-            Analyzing image... 👀
-        </div>
-    `;
-    chat.appendChild(thinking);
-    chat.scrollTop = chat.scrollHeight;
+    showLoading(true);
 
     try {
-        const response = await fetch("/api/chat", {
+
+        const response = await fetch("/api/generate-image", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                message: text,
-                image: uploadedImageBase64 // Send base64 to backend
+                prompt: prompt
             })
         });
 
-        const raw = await response.text();
-        if (thinking) thinking.remove();
-
-        let data = {};
-        try {
-            data = JSON.parse(raw);
-        } catch {
-            data = { error: raw || "Invalid server response" };
-        }
+        const data = await response.json();
 
         if (!response.ok) {
-            addMessage("PRIEST AI", "Server error: " + (data.error || "Unknown error"), "ai");
-            return;
+            throw new Error(
+                data.error || "Image generation failed."
+            );
         }
 
-        addMessage("PRIEST AI", data.answer || "PRIEST AI did not return an answer.", "ai");
+        if (!data.image) {
+            throw new Error("The server did not return an image.");
+        }
 
-        // Clear uploaded image after sending
-        uploadedImageBase64 = null;
-        imageInput.value = "";
-        document.getElementById("messageInput").placeholder = "Message PRIEST AI...";
+        showResult(data.image);
 
     } catch (error) {
-        console.error("IMAGE CHAT ERROR:", error);
-        if (thinking) thinking.remove();
-        addMessage("PRIEST AI", "Connection error: " + error.message, "ai");
+
+        console.error("Image generation error:", error);
+
+        showError(
+            error.message || "Unable to generate image."
+        );
+
+    } finally {
+
+        showLoading(false);
     }
 }
 
-// Helper to add text messages - same as in chat.js
-function addMessage(name, text, type) {
-    const chat = document.getElementById("chat");
-    const message = document.createElement("div");
-    message.className = "message " + type;
+// -----------------------------
+// EDIT EXISTING IMAGE
+// -----------------------------
 
-    const avatar = document.createElement("div");
-    avatar.className = "message-avatar";
-    avatar.textContent = type === "ai"? "P" : "U";
+async function editImage() {
 
-    const content = document.createElement("div");
-    content.className = "message-content";
+    hideError();
 
-    const nameElement = document.createElement("strong");
-    nameElement.textContent = name;
+    if (!selectedImage) {
+        showError("Please select an image first.");
+        return;
+    }
 
-    const textElement = document.createElement("div");
-    textElement.style.marginTop = "4px";
-    textElement.style.whiteSpace = "pre-wrap";
-    textElement.textContent = text;
+    const prompt = promptInput ? promptInput.value.trim() : "";
 
-    content.appendChild(nameElement);
-    content.appendChild(textElement);
-    message.appendChild(avatar);
-    message.appendChild(content);
-    chat.appendChild(message);
-    chat.scrollTop = chat.scrollHeight;
+    if (!prompt) {
+        showError("Please describe how you want to edit the image.");
+        return;
+    }
+
+    showLoading(true);
+
+    try {
+
+        const formData = new FormData();
+
+        formData.append("image", selectedImage);
+        formData.append("prompt", prompt);
+
+        const response = await fetch("/api/edit-image", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Image editing failed."
+            );
+        }
+
+        if (!data.image) {
+            throw new Error("The server did not return an edited image.");
+        }
+
+        showResult(data.image);
+
+    } catch (error) {
+
+        console.error("Image editing error:", error);
+
+        showError(
+            error.message || "Unable to edit image."
+        );
+
+    } finally {
+
+        showLoading(false);
+    }
 }
+
+// -----------------------------
+// BUTTON EVENTS
+// -----------------------------
+
+if (generateButton) {
+    generateButton.addEventListener(
+        "click",
+        generateImage
+    );
+}
+
+if (editButton) {
+    editButton.addEventListener(
+        "click",
+        editImage
+    );
+}
+
+// -----------------------------
+// ENTER KEY
+// -----------------------------
+
+if (promptInput) {
+
+    promptInput.addEventListener("keydown", function (event) {
+
+        if (event.key === "Enter" && !event.shiftKey) {
+
+            event.preventDefault();
+
+            if (selectedImage) {
+                editImage();
+            } else {
+                generateImage();
+            }
+        }
+
+    });
+}
+
+// -----------------------------
+// DOWNLOAD RESULT
+// -----------------------------
+
+const downloadButton =
+    document.getElementById("downloadImageBtn");
+
+if (downloadButton) {
+
+    downloadButton.addEventListener("click", function () {
+
+        if (!resultImage || !resultImage.src) {
+            showError("There is no generated image to download.");
+            return;
+        }
+
+        const link = document.createElement("a");
+
+        link.href = resultImage.src;
+        link.download = "priest-ai-image.png";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+    });
+}
+
+console.log("PRIEST AI IMAGE EDITOR READY");
