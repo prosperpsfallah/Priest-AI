@@ -2,204 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    >
-    <meta
-        name="theme-color"
-        content="#080a0f"
-    >
-    <meta
-        name="description"
-        content="PRIEST AI - Your intelligent AI assistant"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PRIEST AI</title>
-    <!-- Main stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- ================= APP ================= -->
     <div class="app">
-        <!-- ================= SIDEBAR ================= -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="brand">
-                    <div class="brand-logo">P</div>
-                    <div class="brand-text">
-                        <strong>PRIEST AI</strong>
-                        <span>AI Assistant</span>
-                    </div>
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">P</div>
+                <div>
+                    <h1>PRIEST AI</h1>
+                    <span>AI Assistant</span>
                 </div>
-                <button
-                    class="close-sidebar"
-                    id="closeSidebar"
-                    type="button"
-                    aria-label="Close menu"
-                >
-                    ×
+            </div>
+            <button class="new-chat-btn" id="newChatBtn">
+                <span>＋</span>
+                New Chat
+            </button>
+            <div class="sidebar-section">
+                <p>MENU</p>
+                <button class="side-btn active" id="chatMenuBtn">
+                    💬
+                    <span>AI Chat</span>
+                </button>
+                <button class="side-btn" id="clearChatBtn">
+                    🗑️
+                    <span>Clear Chat</span>
                 </button>
             </div>
-            <!-- NEW CHAT -->
-            <button
-                class="new-chat"
-                id="newChat"
-                type="button"
-            >
-                <span>＋</span>
-                <span>New Chat</span>
-            </button>
-            <!-- SIDEBAR MENU -->
-            <nav class="sidebar-menu">
-                <button type="button">
-                    <span>💬</span>
-                    <span>Chat</span>
-                </button>
-                <button type="button">
-                    <span>🖼️</span>
-                    <span>Image Editor</span>
-                </button>
-                <button type="button">
-                    <span>💻</span>
-                    <span>Coding</span>
-                </button>
-                <button type="button">
-                    <span>📚</span>
-                    <span>Learning</span>
-                </button>
-            </nav>
-            <!-- SIDEBAR FOOTER -->
-            <div class="sidebar-footer">
-                <div class="ai-status">
+            <div class="sidebar-bottom">
+                <div class="status">
                     <span class="status-dot"></span>
                     <span>PRIEST AI Online</span>
                 </div>
-                <div class="version">
-                    Version 1.0
-                </div>
             </div>
         </aside>
-        <!-- ================= MAIN ================= -->
+        <!-- MAIN CONTENT -->
         <main class="main">
-            <!-- TOP BAR -->
-            <header class="topbar">
-                <div class="topbar-left">
-                    <button
-                        id="menuButton"
-                        class="menu-button"
-                        type="button"
-                        aria-label="Open menu"
-                    >
-                        ☰
-                    </button>
-                    <div class="mobile-brand">
-                        <div class="mobile-logo">P</div>
-                        <strong>PRIEST AI</strong>
+            <!-- HEADER -->
+            <header class="header">
+                <div class="header-title">
+                    <button class="mobile-menu" id="mobileMenuBtn">☰</button>
+                    <div>
+                        <h2>PRIEST AI</h2>
+                        <p>Your intelligent AI assistant</p>
                     </div>
                 </div>
-                <div class="topbar-actions">
-                    <!-- THEME -->
-                    <button
-                        id="themeToggle"
-                        class="icon-button"
-                        type="button"
-                        aria-label="Toggle theme"
-                    >
-                        ☀️
-                    </button>
+                <div class="online-badge">
+                    <span></span>
+                    Online
                 </div>
             </header>
-            <!-- ================= CHAT AREA ================= -->
-            <section
-                class="chat"
-                id="chat"
-                aria-live="polite"
-            >
+            <!-- CHAT AREA -->
+            <section class="chat-container" id="chatContainer">
                 <!-- WELCOME SCREEN -->
-                <div
-                    class="welcome"
-                    id="welcome"
-                >
-                    <div class="welcome-logo">
-                        P
+                <div class="welcome" id="welcomeScreen">
+                    <div class="welcome-icon">
+                        🤖
                     </div>
-                    <h1>
-                        Welcome to PRIEST AI
-                    </h1>
+                    <h2>Hello! I'm PRIEST AI</h2>
                     <p>
-                        Your AI assistant for questions, ideas,
-                        coding, learning and creative work.
+                        Ask me anything. I can help you learn,
+                        write, explain, brainstorm, code, and more.
                     </p>
-                    <!-- SUGGESTIONS -->
                     <div class="suggestions">
-                        <button
-                            class="suggestion"
-                            type="button"
-                            data-prompt="What can you help me with?"
-                        >
-                            <span>💡</span>
-                            <span>What can you help me with?</span>
+                        <button class="suggestion-btn">
+                            Explain something to me
                         </button>
-                        <button
-                            class="suggestion"
-                            type="button"
-                            data-prompt="Help me write some code"
-                        >
-                            <span>💻</span>
-                            <span>Help me write some code</span>
+                        <button class="suggestion-btn">
+                            Help me write something
                         </button>
-                        <button
-                            class="suggestion"
-                            type="button"
-                            data-prompt="Explain something to me"
-                        >
-                            <span>📚</span>
-                            <span>Explain something to me</span>
+                        <button class="suggestion-btn">
+                            Help me with coding
+                        </button>
+                        <button class="suggestion-btn">
+                            Ask me a question
                         </button>
                     </div>
                 </div>
             </section>
-            <!-- ================= INPUT AREA ================= -->
+            <!-- INPUT AREA -->
             <footer class="input-area">
-                <form
-                    id="chatForm"
-                    class="chat-form"
-                    autocomplete="off"
-                >
-                    <div class="input-wrapper">
-                        <input
-                            type="text"
-                            id="messageInput"
-                            name="message"
-                            placeholder="Message PRIEST AI..."
-                            autocomplete="off"
-                            aria-label="Message PRIEST AI"
-                            required
-                        >
-                        <button
-                            type="submit"
-                            id="sendButton"
-                            class="send-button"
-                            aria-label="Send message"
-                        >
-                            ➤
-                        </button>
-                    </div>
-                </form>
-                <div class="input-disclaimer">
-                    PRIEST AI can make mistakes. Check important information.
+                <div class="input-wrapper">
+                    <textarea
+                        id="messageInput"
+                        placeholder="Message PRIEST AI..."
+                        rows="1"
+                        autocomplete="off"
+                    ></textarea>
+                    <button
+                        id="sendBtn"
+                        class="send-btn"
+                        type="button"
+                        aria-label="Send message"
+                    >
+                        ➤
+                    </button>
                 </div>
+                <p class="disclaimer">
+                    PRIEST AI can make mistakes. Check important information.
+                </p>
             </footer>
         </main>
     </div>
-    <!-- ================= OVERLAY ================= -->
-    <div
-        class="sidebar-overlay"
-        id="sidebarOverlay"
-    ></div>
-    <!-- ================= JAVASCRIPT ================= -->
-    <script src="scrip t.js"></script>
-    <script src="edit-image.js"></script>
-    
+    <!-- JAVASCRIPT -->
+    <script src="script.js"></script>
 </body>
 </html>
