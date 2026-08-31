@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>PRIEST AI</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
     <div class="app">
+
         <!-- SIDEBAR -->
         <aside class="sidebar">
+
             <div class="logo">
                 <div class="logo-icon">P</div>
                 <div>
@@ -17,81 +23,113 @@
                     <span>AI Assistant</span>
                 </div>
             </div>
+
             <button class="new-chat-btn" id="newChatBtn">
                 <span>＋</span>
                 New Chat
             </button>
+
             <div class="sidebar-section">
                 <p>MENU</p>
+
                 <button class="side-btn active" id="chatMenuBtn">
                     💬
                     <span>AI Chat</span>
                 </button>
+
                 <button class="side-btn" id="clearChatBtn">
                     🗑️
                     <span>Clear Chat</span>
                 </button>
             </div>
+
             <div class="sidebar-bottom">
                 <div class="status">
                     <span class="status-dot"></span>
                     <span>PRIEST AI Online</span>
                 </div>
             </div>
+
         </aside>
+
+
         <!-- MAIN CONTENT -->
         <main class="main">
+
             <!-- HEADER -->
             <header class="header">
+
                 <div class="header-title">
                     <button class="mobile-menu" id="mobileMenuBtn">☰</button>
+
                     <div>
                         <h2>PRIEST AI</h2>
                         <p>Your intelligent AI assistant</p>
                     </div>
                 </div>
+
                 <div class="online-badge">
                     <span></span>
                     Online
                 </div>
+
             </header>
+
+
             <!-- CHAT AREA -->
             <section class="chat-container" id="chatContainer">
+
                 <!-- WELCOME SCREEN -->
                 <div class="welcome" id="welcomeScreen">
+
                     <div class="welcome-icon">
                         🤖
                     </div>
+
                     <h2>Hello! I'm PRIEST AI</h2>
+
                     <p>
                         Ask me anything. I can help you learn,
                         write, explain, brainstorm, code, and more.
                     </p>
+
                     <div class="suggestions">
+
                         <button class="suggestion-btn">
                             Explain something to me
                         </button>
+
                         <button class="suggestion-btn">
                             Help me write something
                         </button>
+
                         <button class="suggestion-btn">
                             Help me with coding
                         </button>
+
                         <button class="suggestion-btn">
                             Ask me a question
                         </button>
+
                     </div>
+
                 </div>
+
             </section>
+
+
             <!-- INPUT AREA -->
             <footer class="input-area">
+
                 <div class="input-wrapper">
+
                     <textarea
                         id="messageInput"
                         placeholder="Message PRIEST AI..."
                         rows="1"
                         autocomplete="off"
                     ></textarea>
+
                     <button
                         id="sendBtn"
                         class="send-btn"
@@ -100,14 +138,22 @@
                     >
                         ➤
                     </button>
+
                 </div>
+
                 <p class="disclaimer">
                     PRIEST AI can make mistakes. Check important information.
                 </p>
+
             </footer>
+
         </main>
+
     </div>
+
+
     <!-- JAVASCRIPT -->
     <script src="script.js"></script>
+
 </body>
 </html>
