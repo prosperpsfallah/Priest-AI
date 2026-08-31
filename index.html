@@ -3,19 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>PRIEST AI</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
     <div class="app">
-
         <!-- SIDEBAR -->
         <aside class="sidebar">
-
             <div class="logo">
                 <div class="logo-icon">P</div>
                 <div>
@@ -23,137 +17,149 @@
                     <span>AI Assistant</span>
                 </div>
             </div>
-
-            <button class="new-chat-btn" id="newChatBtn">
+            <button
+                class="new-chat-btn"
+                id="newChatBtn"
+                type="button"
+            >
                 <span>＋</span>
                 New Chat
             </button>
-
             <div class="sidebar-section">
                 <p>MENU</p>
-
-                <button class="side-btn active" id="chatMenuBtn">
+                <button
+                    class="side-btn active"
+                    id="chatMenuBtn"
+                    type="button"
+                >
                     💬
                     <span>AI Chat</span>
                 </button>
-
-                <button class="side-btn" id="clearChatBtn">
+                <button
+                    class="side-btn"
+                    id="clearChatBtn"
+                    type="button"
+                >
                     🗑️
                     <span>Clear Chat</span>
                 </button>
             </div>
-
             <div class="sidebar-bottom">
                 <div class="status">
                     <span class="status-dot"></span>
-                    <span>PRIEST AI Online</span>
+                    <span>
+                        PRIEST AI Online
+                    </span>
                 </div>
             </div>
-
         </aside>
-
-
-        <!-- MAIN CONTENT -->
+        <!-- MAIN -->
         <main class="main">
-
             <!-- HEADER -->
             <header class="header">
-
                 <div class="header-title">
-                    <button class="mobile-menu" id="mobileMenuBtn">☰</button>
-
+                    <button
+                        class="mobile-menu"
+                        id="mobileMenuBtn"
+                        type="button"
+                    >
+                        ☰
+                    </button>
                     <div>
                         <h2>PRIEST AI</h2>
-                        <p>Your intelligent AI assistant</p>
+                        <p>
+                            Your intelligent AI assistant
+                        </p>
                     </div>
                 </div>
-
                 <div class="online-badge">
                     <span></span>
                     Online
                 </div>
-
             </header>
-
-
-            <!-- CHAT AREA -->
-            <section class="chat-container" id="chatContainer">
-
-                <!-- WELCOME SCREEN -->
-                <div class="welcome" id="welcomeScreen">
-
+            <!-- CHAT -->
+            <section
+                class="chat-container"
+                id="chatContainer"
+            >
+                <!-- WELCOME -->
+                <div
+                    class="welcome"
+                    id="welcomeScreen"
+                >
                     <div class="welcome-icon">
                         🤖
                     </div>
-
-                    <h2>Hello! I'm PRIEST AI</h2>
-
+                    <h2>
+                        Hello! I'm PRIEST AI
+                    </h2>
                     <p>
-                        Ask me anything. I can help you learn,
-                        write, explain, brainstorm, code, and more.
+                        Ask me anything. I can help you
+                        learn, write, explain, brainstorm,
+                        code, and more.
                     </p>
-
                     <div class="suggestions">
-
-                        <button class="suggestion-btn">
+                        <button
+                            class="suggestion-btn"
+                            type="button"
+                        >
                             Explain something to me
                         </button>
-
-                        <button class="suggestion-btn">
+                        <button
+                            class="suggestion-btn"
+                            type="button"
+                        >
                             Help me write something
                         </button>
-
-                        <button class="suggestion-btn">
+                        <button
+                            class="suggestion-btn"
+                            type="button"
+                        >
                             Help me with coding
                         </button>
-
-                        <button class="suggestion-btn">
+                        <button
+                            class="suggestion-btn"
+                            type="button"
+                        >
                             Ask me a question
                         </button>
-
                     </div>
-
                 </div>
-
             </section>
-
-
-            <!-- INPUT AREA -->
+            <!-- INPUT -->
             <footer class="input-area">
-
                 <div class="input-wrapper">
-
                     <textarea
                         id="messageInput"
                         placeholder="Message PRIEST AI..."
                         rows="1"
                         autocomplete="off"
                     ></textarea>
-
+                    <!-- SEND BUTTON -->
                     <button
                         id="sendBtn"
                         class="send-btn"
                         type="button"
                         aria-label="Send message"
+                        onclick="testSendButton()"
                     >
                         ➤
                     </button>
-
                 </div>
-
                 <p class="disclaimer">
-                    PRIEST AI can make mistakes. Check important information.
+                    PRIEST AI can make mistakes.
+                    Check important information.
                 </p>
-
             </footer>
-
         </main>
-
     </div>
-
-
-    <!-- JAVASCRIPT -->
+    <!-- BUTTON TEST -->
+    <script>
+        function testSendButton() {
+            alert("SEND BUTTON IS WORKING!");
+        }
+    </script>
+    <!-- MAIN JAVASCRIPT -->
     <script src="script.js"></script>
-
 </body>
 </html>
