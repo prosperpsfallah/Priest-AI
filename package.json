@@ -1,7 +1,7 @@
 {
   "name": "priest-ai",
   "version": "1.0.0",
-  "description": "PRIEST AI - AI Assistant",
+  "description": "PRIEST AI Assistant",
   "main": "api/chat.js",
   "scripts": {
     "start": "node api/chat.js"
